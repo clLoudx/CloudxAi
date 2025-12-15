@@ -9,6 +9,7 @@ from app.core.security import (
     verify_password,
     create_access_token,
     create_refresh_token,
+    verify_token,
 )
 
 
@@ -40,6 +41,10 @@ async def authenticate_user(
 
 def create_token_pair(user: User) -> Token:
     return Token(
-        access_token=create_access_token(subject=str(user.id)),
-        refresh_token=create_refresh_token(subject=str(user.id)),
+        access_token=create_access_token({"sub": str(user.id)}),
+        refresh_token=create_refresh_token({"sub": str(user.id)}),
     )
+
+
+def verify_access_token(token: str) -> Optional[Dict[str, Any]]:
+    return verify_token(token, "access")

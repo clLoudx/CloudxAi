@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 from .api.v1.routers.health import router as health_router
 from .api.v1.routers.auth import router as auth_router
+from .api.v1.routers.users import router as users_router
 from .core.config import get_settings
 from .core.logging import CorrelationIdMiddleware, get_logger, setup_logging
 from .core.redis_client import redis_client
@@ -104,6 +105,11 @@ app.include_router(
     auth_router,
     prefix="/api/v1/auth",
     tags=["Authentication"],
+)
+app.include_router(
+    users_router,
+    prefix="/api/v1",
+    tags=["Users"],
 )
 
 
