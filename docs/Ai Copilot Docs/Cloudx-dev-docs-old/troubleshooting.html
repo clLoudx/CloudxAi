@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Agent — Troubleshooting & Repair Guide</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:#0b1220;color:#e6eef6;line-height:1.6}
+  .container{max-width:1150px;margin:30px auto;padding:28px;background:#0d1628;border-radius:14px;box-shadow:0 0 20px rgba(0,0,0,0.7)}
+  h1{font-size:28px;margin-top:0;font-weight:800;color:#7ef0ff}
+  h2{margin-top:28px;font-size:22px;color:#9ce4ff;font-weight:700}
+  h3{margin-top:22px;font-size:18px;color:#b9dbff;font-weight:700}
+  p{color:#cbd7e6}
+  .muted{color:#8fa5bd}
+  pre{background:#081019;padding:14px;border-left:4px solid #00e0ff;border-radius:8px;overflow:auto;color:#d1e5ff}
+  code{background:#0c1a2b;padding:2px 6px;border-radius:4px;color:#a6ddff}
+  .warning{background:#3d2b00;padding:10px;border-left:4px solid #ffb300;border-radius:6px;color:#ffe2a3;margin:14px 0}
+  .ok{background:#002f1c;padding:10px;border-left:4px solid #00ffa3;border-radius:6px;color:#a5f5d1;margin:14px 0}
+  .critical{background:#3a0000;padding:10px;border-left:4px solid #ff4c4c;border-radius:6px;color:#ffbaba;margin:14px 0}
+  .section-box{background:#0f1c32;padding:16px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-top:18px}
+  ul{margin-left:20px}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Troubleshooting & Repair Guide</h1>
+<p class="muted">A complete operator's handbook for diagnosing and fixing any AI-Agent deployment issue: systemd, Kubernetes, Helm, cert-manager, Redis, networking, release ZIP installs, and emergency repair scenarios.</p>
+
+<hr style="border-color:#11253d">
+
+<!-- SECTION 1 -->
+<h2>1. Quick Diagnostic Flow (Decision Tree)</h2>
+
+<div class="section-box">
+<b>Step 1 — What failed?</b>
+<ul>
+  <li>If <b>local install / systemd</b> → go to section 2.</li>
+  <li>If <b>Kubernetes / Helm deploy</b> → go to section 3.</li>
+  <li>If <b>Installer ZIP extraction or missing modules</b> → section 4.</li>
+  <li>If <b>Healthcheck is failing</b> → section 5.</li>
+  <li>If <b>Redis queues stuck</b> → section 6.</li>
+  <li>If <b>Ingress / TLS (cert-manager)</b> broken → section 7.</li>
+  <li>If <b>CI builds or smoke tests fail</b> → section 8.</li>
+</ul>
+
+<b>Step 2 — Severity?</b>
+<ul>
+  <li><span class="critical">CRITICAL</span> — Service down or failing health checks → run emergency repair (Section 9)</li>
+  <li><span class="warning">WARNING</span> — Slow response, intermittent issues → check Redis & ingress config</li>
+  <li><span class="ok">OK</span> — Healthy but showing warnings → run <code>doctor.sh</code></li>
+</ul>
+</div>
+
+<br>
+
+<!-- SECTION 2 -->
+<h2>2. Local Install / Systemd Troubleshooting</h2>
+
+<h3>2.1 Check service status</h3>
+<pre>sudo systemctl status aiagent -n 50
+sudo systemctl status aiagent-worker -n 50</pre>
+
+<h3>2.2 Common systemd failures</h3>
+
+<div class="critical"><b>Failure:</b> <code>ExecStart</code> command not found  
+<b>Cause:</b> Virtualenv not created or missing Python modules.</div>
+
+<b>Fix:</b>
+<pre>sudo /opt/ai-agent/venv/bin/pip install -r /opt/ai-agent/requirements.txt</pre>
+
+<div class="critical"><b>Failure:</b> <code>Permission denied /etc/ai-agent/env</code></div>
+Fix:
+<pre>sudo chmod 600 /etc/ai-agent/env
+sudo chown aiagent:aiagent /etc/ai-agent/env</pre>
+
+<h3>2.3 Restart services safely</h3>
+<pre>sudo systemctl daemon-reload
+sudo systemctl restart aiagent aiagent-worker</pre>
+
+<h3>2.4 Local healthcheck</h3>
+<pre>curl -v localhost:8000/healthz</pre>
+
+---
+
+<!-- SECTION 3 -->
+<h2>3. Kubernetes / Helm Troubleshooting</h2>
+
+<h3>3.1 Check Pod status</h3>
+<pre>kubectl get pods -n aiagent
+kubectl describe pod <pod> -n aiagent</pre>
+
+<h3>3.2 Check logs</h3>
+<pre>kubectl logs deployment/aiagent -n aiagent
+kubectl logs deployment/aiagent-worker -n aiagent</pre>
+
+<h3>3.3 Common Kubernetes failures</h3>
+
+<div class="critical"><b>CrashLoopBackOff</b></div>
+Possible causes:
+<ul>
+  <li>Missing environment variables in Helm values</li>
+  <li>ImagePullSecrets not configured</li>
+  <li>Healthcheck failing causing restarts</li>
+</ul>
+
+Fix:
+<pre>kubectl get events -n aiagent</pre>
+
+<h3>3.4 Check health probes</h3>
+<pre>kubectl describe pod <pod> | grep -A3 Liveness</pre>
+
+---
+
+<!-- SECTION 4 -->
+<h2>4. Installer & Release ZIP Issues</h2>
+
+<h3>4.1 ZIP fails to extract</h3>
+<div class="critical"><b>Error:</b> <code>no such file or directory: ai-agent/modules/ui.sh</code></div>
+
+Fix: ensure ZIP created with deterministic folder:
+<pre>./build_release_zip.sh
+unzip -l dist/*.zip | grep modules</pre>
+
+<h3>4.2 Installer missing dependencies</h3>
+Run:
+<pre>bash installer.sh --doctor</pre>
+
+<h3>4.3 Wrong working directory</h3>
+All installers must compute repo root with:
+<pre>REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"</pre>
+
+---
+
+<!-- SECTION 5 -->
+<h2>5. Healthcheck Troubleshooting</h2>
+
+<h3>5.1 Basic command</h3>
+<pre>curl -s localhost:8000/healthz</pre>
+
+Expected:
+<pre>{"status":"ok","uptime":###}</pre>
+
+<h3>5.2 Healthcheck returning non-200</h3>
+
+<div class="critical">Cause: Worker not connected / Redis down</div>
+<div class="critical">Cause: Database / service dependency missing</div>
+
+Fix:
+<pre>systemctl restart aiagent-worker
+redis-cli PING</pre>
+
+---
+
+<!-- SECTION 6 -->
+<h2>6. Redis Issues</h2>
+
+<h3>6.1 Check if Redis is alive</h3>
+<pre>redis-cli PING</pre>
+
+<h3>6.2 Check queue length</h3>
+<pre>redis-cli LLEN rq:queue:default</pre>
+
+<h3>6.3 Common Redis problems</h3>
+
+<div class="warning">Background worker lost connection → restart worker</div>
+<pre>systemctl restart aiagent-worker</pre>
+
+---
+
+<!-- SECTION 7 -->
+<h2>7. TLS / cert-manager Troubleshooting</h2>
+
+<h3>7.1 Check certificate</h3>
+<pre>kubectl get certificate -n aiagent</pre>
+
+<h3>7.2 Check issuer logs</h3>
+<pre>kubectl logs deploy/cert-manager -n cert-manager</pre>
+
+<h3>7.3 Common cert-manager failures</h3>
+
+<div class="critical">Error: <code>Order failed / challenge failed</code></div>
+
+Fix:
+<ul>
+  <li>DNS A record not pointing to LoadBalancer</li>
+  <li>Firewall blocking ports 80/443</li>
+  <li>Wrong ingressClassName</li>
+</ul>
+
+---
+
+<!-- SECTION 8 -->
+<h2>8. CI / Smoke Test Failures</h2>
+
+<h3>8.1 Check smoke test output</h3>
+<pre>.github/workflows/build-zip-and-test.yml</pre>
+
+<h3>8.2 Typical CI errors</h3>
+
+<div class="critical">“Unable to import module X”</div>
+Fix:
+<pre>pip install -r requirements.txt</pre>
+
+<div class="critical">“Healthcheck failed during smoke test”</div>
+Fix:
+<pre>devops/smoke_tests/check_http.sh localhost 8000 /healthz</pre>
+
+---
+
+<!-- SECTION 9 -->
+<h2>9. Emergency Repair Mode</h2>
+
+<h3>9.1 Run full repair</h3>
+<pre>sudo tools/emergency-total-repair.sh --full-auto</pre>
+
+Includes:
+<ul>
+  <li>Systemd service auto-repair</li>
+  <li>Python venv rebuild</li>
+  <li>File permissions fix</li>
+  <li>Network & DNS checks</li>
+  <li>Redis repair</li>
+</ul>
+
+<h3>9.2 Quick state fix</h3>
+<pre>sudo doctor.sh --fix</pre>
+
+---
+
+<!-- SECTION 10 -->
+<h2>10. FAQ</h2>
+
+<h3>“Service is running but no responses come back.”</h3>
+<div class="warning">Check reverse proxy / ingress config and CORS.</div>
+
+<h3>“Helm upgrade breaks the cluster.”</h3>
+Fix:
+<pre>helm rollback aiagent <revision> -n aiagent</pre>
+
+<h3>“Worker not processing jobs.”</h3>
+<div class="critical">Redis queue stuck.</div>
+
+Fix:
+<pre>redis-cli FLUSHALL</pre>
+(Only for dev/test — never run in production!)
+
+---
+
+<footer style="margin-top:30px;color:#7ea0c8;">
+Generated for AI-Agent DevOps Suite — Troubleshooting Reference Guide
+</footer>
+
+</div>
+</body>
+</html>
+

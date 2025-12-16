@@ -1,0 +1,15 @@
+# For reference only. cert-manager CRDs MUST be installed by cert-manager chart.
+# This file exists only for Helm completeness.
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: aiagent-cert
+spec:
+  secretName: aiagent-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - {{ .Values.ingress.host }}
+

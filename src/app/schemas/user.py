@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from typing import List
 
 
 class UserCreate(BaseModel):
@@ -11,6 +12,7 @@ class UserRead(BaseModel):
     email: EmailStr
     is_active: bool
     is_superuser: bool
+    roles: List[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

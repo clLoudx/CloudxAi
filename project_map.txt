@@ -1,0 +1,334 @@
+.
+├── ai-agent
+│   ├── ai
+│   │   ├── adapter.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── adapter.cpython-311.pyc
+│   │       └── __init__.cpython-311.pyc
+│   ├── aiagent_changes.tar.gz
+│   ├── aiagent_release.patch
+│   ├── analyze_project.py
+│   ├── clone_from_url.sh
+│   ├── conftest.py
+│   ├── coordinator.py
+│   ├── dashboard
+│   │   ├── app.py
+│   │   ├── app.py.bak
+│   │   ├── app.py.preprom.bak
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── app.cpython-311.pyc
+│   │   │   └── __init__.cpython-311.pyc
+│   │   ├── static
+│   │   │   ├── css
+│   │   │   │   └── dashboard.css
+│   │   │   └── js
+│   │   │       ├── dashboard.js
+│   │   │       └── dlq.js
+│   │   └── templates
+│   │       ├── dlq.html
+│   │       └── index.html
+│   ├── demo
+│   │   └── demo_mock_playback.sh
+│   ├── deploy
+│   │   ├── alert_rules_generated.yml
+│   │   ├── alert_rules.yml
+│   │   ├── docker-compose.prod.yml
+│   │   ├── grafana
+│   │   │   ├── ai-agent-complete.json
+│   │   │   ├── ai-agent-full.json
+│   │   │   ├── ai-agent-overview.json
+│   │   │   ├── alert_rules_suggestions.json
+│   │   │   └── dashboards
+│   │   │       ├── ai_agent_full_enterprise.json
+│   │   │       ├── ai_agent_full_enterprise_large.json
+│   │   │       └── ai_agent_polished.json
+│   │   ├── grafana_dashboard.json
+│   │   ├── grafana_provisioning
+│   │   │   ├── dashboards
+│   │   │   │   └── ai-agent
+│   │   │   │       └── ai-agent-full.json
+│   │   │   └── dashboards.yaml
+│   │   ├── nginx
+│   │   │   ├── ai-agent.conf
+│   │   │   └── limit_api.conf
+│   │   ├── nginx.conf
+│   │   ├── prometheus_scrape.yml
+│   │   ├── supervisor
+│   │   │   └── ai-agent.conf
+│   │   └── systemd
+│   │       ├── ai-agent.service
+│   │       └── ai-agent-worker.service
+│   ├── developer_agent.py
+│   ├── devops
+│   │   └── systemd
+│   │       └── aiagent.service
+│   ├── docker-compose.prod.yml
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── docs
+│   │   └── deploy.md
+│   ├── .env.example
+│   ├── final_production_v2_patch_all.sh
+│   ├── final_production_v2_patch.sh
+│   ├── .github
+│   │   └── workflows
+│   │       ├── ci.yml
+│   │       └── protected-merge.yml
+│   ├── gunicorn.conf.py
+│   ├── insert_modules.source.patch
+│   ├── install_agent.sh
+│   ├── installer.sh
+│   ├── install.sh
+│   ├── Makefile
+│   ├── mega_installer_v1.sh
+│   ├── mock_mode.sh
+│   ├── mock_run.sh
+│   ├── mocks
+│   │   ├── builder_success.json
+│   │   ├── fixer_success.json
+│   │   └── low_confidence.json
+│   ├── modules
+│   │   ├── healthcheck.sh
+│   │   ├── installer_helpers.sh
+│   │   ├── kube_bootstrap.sh
+│   │   ├── logging.sh
+│   │   └── ui.sh
+│   ├── old-install.sh
+│   ├── patcher.py
+│   ├── prev
+│   │   ├── ai-agent-original
+│   │   │   ├── autofix.py
+│   │   │   ├── coordinator.py
+│   │   │   ├── dashboard
+│   │   │   │   ├── app.py
+│   │   │   │   └── templates
+│   │   │   │       └── index.html
+│   │   │   ├── executor.py
+│   │   │   ├── install_agent.sh
+│   │   │   ├── patcher.py
+│   │   │   ├── prompts
+│   │   │   │   ├── coordinator_prompt.txt
+│   │   │   │   ├── worker_builder.txt
+│   │   │   │   └── worker_fixer.txt
+│   │   │   ├── queue_client.py
+│   │   │   ├── requirements.txt
+│   │   │   ├── run_agent.sh
+│   │   │   ├── verifier.py
+│   │   │   └── worker.py
+│   │   ├── .github
+│   │   │   └── workflows
+│   │   │       └── ci-pr.yml
+│   │   ├── mocks
+│   │   │   ├── builder_success.json
+│   │   │   ├── fixer_success.json
+│   │   │   └── low_confidence.json
+│   │   └── repo_templates
+│   │       ├── composer.json
+│   │       ├── phpstan.neon
+│   │       ├── phpunit.xml
+│   │       ├── README.md
+│   │       └── tests
+│   │           └── SampleTest.php
+│   ├── prompts
+│   │   ├── coordinator_prompt.txt
+│   │   ├── human_assistant.txt
+│   │   ├── worker_builder.txt
+│   │   └── worker_fixer.txt
+│   ├── __pycache__
+│   │   ├── conftest.cpython-311-pytest-8.2.2.pyc
+│   │   └── queue_client.cpython-311.pyc
+│   ├── .pytest_cache
+│   │   ├── CACHEDIR.TAG
+│   │   ├── .gitignore
+│   │   ├── README.md
+│   │   └── v
+│   │       └── cache
+│   │           ├── lastfailed
+│   │           ├── nodeids
+│   │           └── stepwise
+│   ├── pytest_full_output.txt
+│   ├── queue_client
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       └── __init__.cpython-311.pyc
+│   ├── README_deploy_playbook.md
+│   ├── README.md
+│   ├── repo
+│   │   ├── composer.json
+│   │   ├── phpstan.neon
+│   │   ├── phpunit.xml
+│   │   └── tests
+│   │       ├── agent_harness
+│   │       │   ├── test_auth.php
+│   │       │   ├── test_channels.php
+│   │       │   └── test_streaming.php
+│   │       └── SampleTest.php
+│   ├── requirements.txt
+│   ├── run_agent.sh
+│   ├── scripts
+│   │   ├── apply_patch.sh
+│   │   ├── deploy_alerts.sh
+│   │   ├── deploy_v2.sh
+│   │   ├── docker_entrypoint.sh
+│   │   ├── final_installer.sh
+│   │   ├── import_repo.sh
+│   │   ├── run_gunicorn.sh
+│   │   ├── run_rq_worker.sh
+│   │   └── verify_tarballs.sh
+│   ├── terminate_worker.sh
+│   ├── tests
+│   │   ├── __pycache__
+│   │   │   ├── test_agent.cpython-311-pytest-8.2.2.pyc
+│   │   │   ├── test_api.cpython-311-pytest-8.2.2.pyc
+│   │   │   └── test_harnesses.cpython-311-pytest-8.2.2.pyc
+│   │   ├── test_agent.py
+│   │   ├── test_api.py
+│   │   └── test_harnesses.py
+│   ├── worker
+│   │   ├── dlq.py
+│   │   ├── rq_worker.py
+│   │   ├── worker.py
+│   │   └── worker.py.preprom.bak
+│   └── worker.py
+├── auto-bootstrap-aiagent.sh
+├── backend_snippets
+│   └── healthz_flask.py
+├── build_and_bundle.sh
+├── build_final_zip.sh
+├── build_release_zip.sh
+├── charts
+│   └── aiagent
+│       ├── charts.yaml
+│       ├── templates
+│       │   ├── deployment.yaml
+│       │   ├── healthcheck-configmap.yaml
+│       │   ├── ingress.yaml
+│       │   ├── secret-imagepull.yaml
+│       │   ├── service.yaml
+│       │   └── tests
+│       │       └── test-readiness.yaml
+│       ├── values-production.yaml
+│       └── values.yaml
+├── cloud-provisioners
+│   ├── aws_create_cluster.sh
+│   ├── do_create_cluster.sh
+│   └── gcp_create_cluster.sh
+├── create_github_workflows.sh
+├── deploy
+│   └── k8s
+│       └── cert-manager
+│           ├── cert-manager-issuer-production (copy).yaml
+│           ├── cert-manager-issuer-production.yaml
+│           └── cert-manager-issuer-staging.yaml
+├── Dev-Docs
+│   ├── Ai Agent Chat Frontend - Multi-file React App.pdf
+│   ├── Ai Agent Chat Frontend - Multi-file React App.txt
+│   ├── ai-agent-devmap.zip
+│   ├── aiagent_docs_full.zip
+│   ├── ai-agent-final-v1.zip
+│   ├── aiagent_full_power_installer.sh
+│   ├── architecture.html
+│   ├── developer.html
+│   ├── docs_tools.html
+│   ├── faq.html
+│   ├── filemap.html
+│   ├── GPT-DEV-Conversassion.txt
+│   ├── index.html
+│   ├── installer_guide.html
+│   ├── install.html
+│   ├── runbooks.html
+│   ├── scripts.js
+│   └── styles.css
+├── devops
+│   ├── helm
+│   │   ├── aiagent
+│   │   │   ├── Chart.yaml
+│   │   │   ├── crds
+│   │   │   │   └── certificate-crd.yaml
+│   │   │   ├── templates
+│   │   │   │   ├── certificate.yaml
+│   │   │   │   ├── deployment.yaml
+│   │   │   │   ├── ingress.yaml
+│   │   │   │   ├── issuer.yaml
+│   │   │   │   ├── NOTES.txt
+│   │   │   │   ├── redis-secret.yaml
+│   │   │   │   ├── redis.yaml
+│   │   │   │   └── service.yaml
+│   │   │   └── values.yaml
+│   │   ├── aiagent-web
+│   │   │   ├── Chart.yaml
+│   │   │   ├── templates
+│   │   │   │   └── deployment.yaml
+│   │   │   └── values.yaml
+│   │   └── aiagent-worker
+│   │       ├── Chart.yaml
+│   │       ├── templates
+│   │       │   └── deployment.yaml
+│   │       └── values.yaml
+│   ├── patches
+│   │   └── fix-repo-root.patch
+│   ├── smoke_tests
+│   │   ├── check_http.sh
+│   │   ├── check_imports.sh
+│   │   └── ci_wrapper.sh
+│   ├── systemd
+│   │   └── aiagent.service
+│   └── tools
+│       ├── deploy_from_zip.sh
+│       ├── healthcheck.sh
+│       ├── post_deploy_smoke.sh
+│       ├── README.txt
+│       └── self_test_bundle.sh
+├── doctor.sh
+├── .env.example
+├── frontend
+│   ├── package.json
+│   ├── public
+│   │   └── index.html
+│   ├── src
+│   │   ├── App.jsx
+│   │   ├── components
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── generate_devops_and_files.sh
+├── .github
+│   ├── cd-helm-deploy.yml
+│   ├── ci-build-and-push.yml
+│   ├── ci_cd_k8s.yaml
+│   └── workflows
+│       ├── build-zip-and-test.yml
+│       ├── ci-smoke.yml
+│       └── helm-deploy.yml
+├── github_actions
+│   ├── cd-helm-deploy.yml
+│   ├── ci-build-and-push.yml
+│   ├── ci_cd_k8s.yaml
+│   ├── ci-smoke.yml
+│   ├── deploy-helm.yml
+│   └── workflows
+│       ├── build-zip-and-test.yml
+│       ├── ci-smoke.yml
+│       ├── ci.yml
+│       └── helm-deploy.yml
+├── insert_modules_build.sh
+├── installer-helm-deploy.sh
+├── installer.sh
+├── oneclick_cluster_install.sh
+├── project_map.txt
+├── README.txt
+├── service-repair.sh
+├── smoke_tests
+│   └── smoke_check.sh
+├── tools
+│   ├── build_aiagent_bundle.sh
+│   ├── dpkg-emergency-repair.sh
+│   ├── emergency-total-repair.sh
+│   └── ReadMe.txt
+├── uninstaller.sh
+├── upgrade.sh
+└── verify_and_repair.sh
+

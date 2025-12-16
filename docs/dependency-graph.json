@@ -1,0 +1,296 @@
+{
+  "metadata": {
+    "generated": "2025-01-27",
+    "version": "1.0",
+    "description": "Complete dependency graph of AI-Cloudx Agent repository"
+  },
+  "installers": {
+    "installer_master.sh": {
+      "path": "/opt/ai-agent",
+      "dependencies": {
+        "modules": [
+          "ai-agent/modules/ui.sh",
+          "ai-agent/modules/healthcheck.sh"
+        ],
+        "tools": [
+          "devops/tools/post_deploy_smoke.sh",
+          "tools/emergency-total-repair.sh",
+          "tools/dpkg-emergency-repair.sh",
+          "generate_devops_and_files.sh",
+          "build_and_bundle.sh"
+        ],
+        "charts": [
+          "devops/helm/aiagent"
+        ],
+        "services": [
+          "devops/systemd/aiagent.service"
+        ],
+        "calls": [
+          "installer.sh"
+        ]
+      },
+      "mode": "local_or_kube"
+    },
+    "installer.sh": {
+      "path": "/opt/aiagent",
+      "dependencies": {
+        "modules": [
+          "ai-agent/modules/ui.sh",
+          "ai-agent/modules/installer_helpers.sh",
+          "devops/tools/healthcheck.sh"
+        ],
+        "services": [
+          "devops/systemd/aiagent.service"
+        ]
+      },
+      "mode": "local_only"
+    },
+    "ai-agent/install.sh": {
+      "path": "/opt/ai-agent",
+      "dependencies": {
+        "modules": [],
+        "charts": [
+          "charts/aiagent"
+        ],
+        "calls": [
+          "installer.sh"
+        ]
+      },
+      "mode": "local_or_kube"
+    },
+    "ai-agent/installer.sh": {
+      "path": "dynamic",
+      "dependencies": {
+        "charts": [
+          "devops/helm/aiagent-web"
+        ]
+      },
+      "mode": "kube_only"
+    },
+    "ai-agent/mega_installer_v1.sh": {
+      "path": "/opt/aiagent",
+      "dependencies": {
+        "services": [
+          "ai-agent/deploy/systemd/ai-agent.service",
+          "ai-agent/deploy/systemd/ai-agent-worker.service"
+        ],
+        "patches": [
+          "ai-agent/aiagent_release.patch"
+        ]
+      },
+      "mode": "local_only"
+    },
+    "oneclick_cluster_install.sh": {
+      "path": "kube",
+      "dependencies": {
+        "charts": [
+          "devops/helm/aiagent"
+        ],
+        "tools": [
+          "devops/tools/post_deploy_smoke.sh"
+        ]
+      },
+      "mode": "kube_only"
+    },
+    "installer-helm-deploy.sh": {
+      "path": "kube",
+      "dependencies": {
+        "charts": [
+          "charts/aiagent"
+        ]
+      },
+      "mode": "kube_only"
+    }
+  },
+  "modules": {
+    "ai-agent/modules/ui.sh": {
+      "used_by": [
+        "installer_master.sh",
+        "installer.sh"
+      ],
+      "functions": ["info", "ok", "warn", "err", "title"]
+    },
+    "ai-agent/modules/healthcheck.sh": {
+      "used_by": [
+        "installer_master.sh"
+      ],
+      "functions": ["http_check_with_retry", "tcp_check", "post_deploy_smoke", "systemd_service_ready"],
+      "conflict": "duplicate_of_devops_tools_healthcheck"
+    },
+    "devops/tools/healthcheck.sh": {
+      "used_by": [
+        "devops/tools/post_deploy_smoke.sh",
+        "installer.sh"
+      ],
+      "functions": ["http_check_with_retry", "tcp_check"],
+      "canonical": true
+    },
+    "ai-agent/modules/installer_helpers.sh": {
+      "used_by": [
+        "installer.sh"
+      ],
+      "functions": ["auto_repair_wrapper", "retry_limited", "safe_backup"]
+    }
+  },
+  "services": {
+    "devops/systemd/aiagent.service": {
+      "path": "/opt/aiagent",
+      "used_by": [
+        "installer.sh"
+      ],
+      "canonical": true,
+      "conflict": "path_mismatch"
+    },
+    "ai-agent/deploy/systemd/ai-agent.service": {
+      "path": "/opt/ai-agent",
+      "used_by": [
+        "ai-agent/mega_installer_v1.sh"
+      ],
+      "conflict": "duplicate_different_name"
+    },
+    "ai-agent/devops/systemd/aiagent.service": {
+      "path": "/opt/aiagent",
+      "used_by": [],
+      "conflict": "duplicate"
+    }
+  },
+  "charts": {
+    "devops/helm/aiagent": {
+      "used_by": [
+        "installer_master.sh",
+        "oneclick_cluster_install.sh"
+      ],
+      "canonical": true
+    },
+    "charts/aiagent": {
+      "used_by": [
+        "ai-agent/install.sh",
+        "installer-helm-deploy.sh",
+        "github_actions/deploy-helm.yml",
+        "github_actions/workflows/helm-deploy.yml"
+      ],
+      "conflict": "duplicate"
+    },
+    "devops/helm/aiagent-web": {
+      "used_by": [
+        "ai-agent/installer.sh",
+        "tools/build_aiagent_bundle.sh"
+      ]
+    },
+    "devops/helm/aiagent-worker": {
+      "used_by": [
+        "tools/build_aiagent_bundle.sh"
+      ]
+    }
+  },
+  "smoke_tests": {
+    "devops/smoke_tests": {
+      "files": ["check_http.sh", "check_imports.sh", "ci_wrapper.sh"],
+      "used_by": [
+        "devops/tools/post_deploy_smoke.sh"
+      ],
+      "canonical": true
+    },
+    "smoke_tests": {
+      "files": ["check_http.sh", "check_imports.sh", "ci_wrapper.sh", "docker_compose_check.sh", "kubernetes_probe.sh", "smoke_check.sh"],
+      "used_by": [],
+      "conflict": "duplicate_with_extra_files"
+    }
+  },
+  "tools": {
+    "devops/tools/post_deploy_smoke.sh": {
+      "dependencies": {
+        "modules": ["devops/tools/healthcheck.sh"]
+      },
+      "used_by": [
+        "installer_master.sh",
+        "oneclick_cluster_install.sh"
+      ]
+    },
+    "tools/emergency-total-repair.sh": {
+      "path": "/opt/ai-agent",
+      "used_by": [
+        "installer_master.sh"
+      ]
+    }
+  },
+  "execution_flows": {
+    "local_install": {
+      "entry": "installer_master.sh",
+      "steps": [
+        "preflight_checks",
+        "install_base_packages",
+        "run_local_helpers",
+        "call installer.sh",
+        "setup systemd",
+        "run_post_deploy_smoke"
+      ]
+    },
+    "kube_install": {
+      "entry": "installer_master.sh --kube-deploy",
+      "steps": [
+        "preflight_checks",
+        "install_base_packages",
+        "run_local_helpers",
+        "install_helm_and_prereqs",
+        "helm_deploy_chart (devops/helm/aiagent)",
+        "wait_for_k8s_resources",
+        "run_production_verify",
+        "run_post_deploy_smoke"
+      ]
+    },
+    "oneclick_cluster": {
+      "entry": "oneclick_cluster_install.sh",
+      "steps": [
+        "create_namespace",
+        "install cert-manager",
+        "install ingress-nginx",
+        "install redis",
+        "helm_deploy (devops/helm/aiagent)",
+        "run_post_deploy_smoke"
+      ]
+    }
+  },
+  "conflicts": {
+    "path_conflict": {
+      "type": "installation_path",
+      "values": ["/opt/ai-agent", "/opt/aiagent"],
+      "affected_files": 98,
+      "severity": "HIGH"
+    },
+    "chart_duplication": {
+      "type": "helm_chart",
+      "locations": ["devops/helm/aiagent", "charts/aiagent"],
+      "affected_files": 5,
+      "severity": "HIGH"
+    },
+    "smoke_test_duplication": {
+      "type": "test_directory",
+      "locations": ["devops/smoke_tests", "smoke_tests"],
+      "affected_files": 2,
+      "severity": "MEDIUM"
+    },
+    "healthcheck_duplication": {
+      "type": "module",
+      "locations": ["ai-agent/modules/healthcheck.sh", "devops/tools/healthcheck.sh"],
+      "affected_files": 3,
+      "severity": "MEDIUM"
+    },
+    "systemd_service_duplication": {
+      "type": "service_file",
+      "locations": [
+        "devops/systemd/aiagent.service",
+        "ai-agent/deploy/systemd/ai-agent.service",
+        "ai-agent/devops/systemd/aiagent.service"
+      ],
+      "affected_files": 4,
+      "severity": "HIGH"
+    },
+    "installer_proliferation": {
+      "type": "script_duplication",
+      "count": 9,
+      "severity": "HIGH"
+    }
+  }
+}
+

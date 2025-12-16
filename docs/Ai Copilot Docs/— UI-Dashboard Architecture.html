@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>— UI & Dashboard Architecture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #0b1020;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      line-height: 1.8;
+    }
+    h1 { font-size: 36px; color: #60a5fa; }
+    h2 { font-size: 26px; color: #93c5fd; margin-top: 48px; }
+    h3 { font-size: 20px; color: #bfdbfe; margin-top: 28px; }
+    section {
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 44px;
+    }
+    ul { margin-left: 22px; }
+    .logic {
+      background: #000814;
+      border-left: 6px solid #38bdf8;
+      padding: 18px;
+      margin: 22px 0;
+    }
+    .truth { border-left-color: #4ade80; }
+    .fail { border-left-color: #f87171; }
+    pre {
+      background: #000814;
+      color: #e5e7eb;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    footer {
+      margin-top: 80px;
+      opacity: 0.65;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>— UI & Dashboard Architecture</h1>
+<p><strong>Purpose:</strong> تحويل AI Engine إلى أداة يستخدمها الإنسان يوميًا</p>
+
+<section>
+<h2>INPUT — What the UI Must Support</h2>
+<div class="logic truth">
+<ul>
+  <li>AI Chat (مثل ChatGPT)</li>
+  <li>Project Context Awareness</li>
+  <li>Code View + Terminal Output</li>
+  <li>Execution Feedback Loop</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>PARSE — What UI Is (And Is Not)</h2>
+<div class="logic">
+<p>UI is NOT:</p>
+<ul>
+  <li>Decoration</li>
+  <li>Marketing Layer</li>
+</ul>
+<p>UI IS:</p>
+<ul>
+  <li>A Control Panel for the AI Brain</li>
+  <li>A Visual Debugger</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>CROSS-REFERENCE — Proven Interfaces</h2>
+<div class="logic">
+<ul>
+  <li>ChatGPT Sidebar + Chat Flow</li>
+  <li>Cursor Split View (Chat / Code)</li>
+  <li>VS Code Terminal Panel</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>INFER — Required UI Zones</h2>
+<ul>
+  <li>Sidebar (Navigation)</li>
+  <li>Main Chat Panel</li>
+  <li>Code Viewer / Diff Viewer</li>
+  <li>Terminal Output Panel</li>
+  <li>Status / Execution State</li>
+</ul>
+</section>
+
+<section>
+<h2>ARCHITECTURE — UI Layout Map</h2>
+<pre><code>┌───────────────────────────────────────────┐
+│ Sidebar                                   │
+│ - Projects                                │
+│ - Chats                                   │
+│ - Settings                                │
+│ - Providers                               │
+├───────────────────────────────────────────┤
+│ Main Panel                                │
+│ ┌───────────────┬──────────────────────┐ │
+│ │ AI Chat       │ Code / Diff Viewer    │ │
+│ └───────────────┴──────────────────────┘ │
+│ ┌──────────────────────────────────────┐ │
+│ │ Terminal / Logs / Errors              │ │
+│ └──────────────────────────────────────┘ │
+└───────────────────────────────────────────┘
+</code></pre>
+</section>
+
+<section>
+<h2>TEST — UI ↔ Backend Contract</h2>
+<div class="logic">
+<p>UI must NEVER guess state.</p>
+<p>All states come from backend:</p>
+<ul>
+  <li>running</li>
+  <li>failed</li>
+  <li>fixed</li>
+  <li>completed</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>EXECUTION — Minimal UI Tech Stack</h2>
+<div class="logic truth">
+<ul>
+  <li>HTML + CSS (v1)</li>
+  <li>Vanilla JS or React</li>
+  <li>WebSocket for logs</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>VALIDATE — UI Success Criteria</h2>
+<div class="logic truth">
+<ul>
+  <li>User sees what AI is doing</li>
+  <li>User can interrupt execution</li>
+  <li>User can re-run with context</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>OUTPUT — What STEP 4 Delivers</h2>
+<div class="logic truth">
+<ul>
+  <li>A usable Copilot Interface</li>
+  <li>Human-in-the-loop control</li>
+  <li>Foundation for Admin Dashboard</li>
+</ul>
+</div>
+</section>
+
+<footer>
+<p>STEP 4 — UI & Dashboard Architecture · Max-Logic · Truth-Only</p>
+</footer>
+
+</body>
+</html>
+

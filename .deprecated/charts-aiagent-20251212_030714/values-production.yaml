@@ -1,0 +1,25 @@
+replicaCount: 2
+image:
+  repository: <PRIVATE_REGISTRY>/aiagent_web
+  tag: "v1.0.0"
+imagePullSecrets:
+  - name: my-registry-secret
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: aiagent.example.com
+      paths:
+        - /
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+

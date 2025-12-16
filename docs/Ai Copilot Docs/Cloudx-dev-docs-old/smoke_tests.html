@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI-Agent — Smoke Tests Documentation</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root {
+  --bg:#0b1220;
+  --panel:#071021;
+  --muted:#9fb0c6;
+  --accent:#60a5fa;
+  --accent2:#2dd4bf;
+  --card:#071422;
+  --danger:#ff6b6b;
+  --white:#e6eef6;
+}
+html,body{
+  height:100%;margin:0;
+  background:linear-gradient(180deg,#051124,#081327);
+  color:var(--white);
+  font-family:Inter,-apple-system,system-ui;
+}
+.wrap{max-width:1150px;margin:28px auto;padding:24px;}
+header{margin-bottom:20px}
+header h1{font-size:30px;margin:0;color:var(--accent)}
+header p{margin:4px 0 0;color:var(--muted)}
+.card{
+  background:rgba(255,255,255,0.02);
+  border-radius:14px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,0.04);
+  box-shadow:0 0 30px rgba(0,0,0,0.4);
+}
+h2{color:var(--accent);margin-top:0}
+h3{color:var(--accent2)}
+pre{
+  background:#021427;
+  padding:14px;
+  border-radius:8px;
+  overflow:auto;
+  border:1px solid rgba(255,255,255,0.05);
+  font-size:0.9rem;
+}
+code{
+  background:rgba(255,255,255,0.05);
+  padding:2px 6px;border-radius:4px;
+}
+ul{color:var(--muted)}
+.note{
+  background:rgba(45,212,191,0.05);
+  border-left:4px solid var(--accent2);
+  padding:12px;
+  border-radius:6px;
+  margin:14px 0;
+}
+.warn{
+  background:rgba(255,0,0,0.05);
+  border-left:4px solid var(--danger);
+  padding:12px;
+  border-radius:6px;
+  margin:14px 0;
+}
+table{
+  width:100%;border-collapse:collapse;margin:16px 0;
+}
+table th, table td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  color:var(--muted);
+  font-size:0.95rem;
+}
+footer{
+  margin-top:22px;
+  text-align:center;
+  color:var(--muted);
+  font-size:0.9rem;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>AI-Agent — Smoke Test Suite</h1>
+  <p>Comprehensive smoke testing for Kubernetes, Docker, Helm, and system installs.</p>
+</header>
+
+<div class="card">
+  <h2>Overview</h2>
+  <p>
+    This document describes the complete **Smoke Testing System** used to validate deployments of 
+    <strong>AI-Agent</strong> across:
+  </p>
+  <ul>
+    <li>Local installation</li>
+    <li>Docker Compose</li>
+    <li>Kubernetes + Helm</li>
+    <li>CI/CD automated pipelines</li>
+  </ul>
+
+  <p>These tests verify critical system assumptions immediately after deployment.</p>
+
+  <div class="note">
+    Smoke tests are **not** full integration or QA tests; they are fast, shallow, but decisive health checks.
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: STRUCTURE -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>1. Directory Structure</h2>
+
+  <pre>
+project-root/
+ ├── smoke_tests/
+ │    ├── smoke_check.sh
+ │    ├── check_http.sh
+ │    ├── check_imports.sh
+ │    ├── kubernetes_probe.sh
+ │    ├── docker_compose_check.sh
+ │    └── ci_wrapper.sh
+  </pre>
+
+  <p>Each file is documented below in full with explanations and usage.</p>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: GOALS -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>2. Smoke Test Goals</h2>
+  <p>Every smoke test must validate the following:</p>
+  <ul>
+    <li>✔ Application booted successfully</li>
+    <li>✔ Essential endpoints reachable (<code>/healthz</code>)</li>
+    <li>✔ Required modules import without error</li>
+    <li>✔ Redis connectivity</li>
+    <li>✔ Python worker processes running</li>
+    <li>✔ Kubernetes deployments healthy (if K8s install)</li>
+    <li>✔ Ingress reachable (if TLS/Ingress enabled)</li>
+    <li>✔ Docker containers running (if Compose install)</li>
+  </ul>
+
+  <div class="warn">
+    If any smoke test fails → stop deployment → rollback or alert.
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: SCRIPT 1 -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>3. smoke_check.sh (Main Entrypoint)</h2>
+
+  <p>This is the master script. It determines environment mode and dispatches correct tests.</p>
+
+  <pre>
+#!/bin/bash
+set -e
+
+MODE="$1"
+
+echo "[SMOKE] Starting smoke test, mode=$MODE"
+
+if [[ "$MODE" == "local" ]]; then
+    ./smoke_tests/check_http.sh 127.0.0.1 8000 /healthz
+    ./smoke_tests/check_imports.sh
+    exit 0
+fi
+
+if [[ "$MODE" == "docker" ]]; then
+    ./smoke_tests/docker_compose_check.sh
+    ./smoke_tests/check_http.sh localhost 8000 /healthz
+    exit 0
+fi
+
+if [[ "$MODE" == "k8s" ]]; then
+    ./smoke_tests/kubernetes_probe.sh aiagent aiagent-web
+    exit 0
+fi
+
+echo "[SMOKE] Unknown mode: $MODE"
+exit 1
+  </pre>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: SCRIPT 2 -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>4. check_http.sh</h2>
+
+  <p>Basic but crucial: tests HTTP endpoint returns 200.</p>
+
+  <pre>
+#!/bin/bash
+set -e
+
+HOST="$1"
+PORT="$2"
+PATH="$3"
+
+echo "[SMOKE] Checking HTTP: http://$HOST:$PORT$PATH"
+
+STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://$HOST:$PORT$PATH)
+
+if [[ "$STATUS" != "200" ]]; then
+    echo "[SMOKE] FAIL: Expected 200, got $STATUS"
+    exit 1
+fi
+
+echo "[SMOKE] PASS: HTTP OK"
+  </pre>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: SCRIPT 3 -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>5. check_imports.sh</h2>
+
+  <p>Ensures Python app imports properly and nothing is missing.</p>
+
+  <pre>
+#!/bin/bash
+set -e
+
+echo "[SMOKE] Checking Python imports..."
+
+python3 - <<EOF
+import ai_agent, queue_client, worker
+print("Imports OK")
+EOF
+  </pre>
+
+  <div class="note">
+    This catches missing modules or dependency issues after upgrading the codebase.
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: SCRIPT 4 -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>6. kubernetes_probe.sh</h2>
+  <p>Confirms Kubernetes deployment is healthy and containers are ready.</p>
+
+  <pre>
+#!/bin/bash
+set -e
+
+NAMESPACE="$1"
+DEPLOYMENT="$2"
+
+echo "[SMOKE] Checking Kubernetes deployment $DEPLOYMENT in ns=$NAMESPACE"
+
+kubectl -n $NAMESPACE rollout status deployment/$DEPLOYMENT --timeout=120s
+
+POD=$(kubectl -n $NAMESPACE get pod -l app=$DEPLOYMENT -o jsonpath="{.items[0].metadata.name}")
+
+echo "[SMOKE] Pod selected: $POD"
+
+kubectl -n $NAMESPACE exec $POD -- curl -s http://localhost:8000/healthz || {
+    echo "[SMOKE] FAIL: in-pod healthz failed"
+    exit 1
+}
+
+echo "[SMOKE] PASS: Kubernetes deployment healthy."
+  </pre>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: SCRIPT 5 -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>7. docker_compose_check.sh</h2>
+
+  <p>Validates container boot, logs, and health endpoint.</p>
+
+  <pre>
+#!/bin/bash
+set -e
+
+echo "[SMOKE] Checking Docker Compose services..."
+
+docker compose ps
+
+if ! docker compose ps | grep "Up"; then
+    echo "[SMOKE] FAIL: Some services are not Up"
+    exit 1
+fi
+
+echo "[SMOKE] PASS: Docker containers running."
+  </pre>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: SCRIPT 6 -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>8. ci_wrapper.sh</h2>
+
+  <p>Automated CI pipeline wrapper for GitHub Actions.</p>
+
+  <pre>
+#!/bin/bash
+set -e
+
+MODE="$1"
+
+echo "[CI-SMOKE] Running smoke suite in mode=$MODE"
+
+./smoke_tests/smoke_check.sh "$MODE"
+
+echo "[CI-SMOKE] All checks passed."
+  </pre>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: USAGE -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>9. Usage Examples</h2>
+
+  <h3>Local</h3>
+  <pre>./smoke_tests/smoke_check.sh local</pre>
+
+  <h3>Docker Compose</h3>
+  <pre>./smoke_tests/smoke_check.sh docker</pre>
+
+  <h3>Kubernetes</h3>
+  <pre>./smoke_tests/smoke_check.sh k8s</pre>
+</div>
+
+<!-- ============================================================== -->
+<!-- SECTION: TROUBLESHOOT -->
+<!-- ============================================================== -->
+<div class="card">
+  <h2>10. Troubleshooting</h2>
+
+  <table>
+    <tr>
+      <th>Problem</th>
+      <th>Fix</th>
+    </tr>
+    <tr>
+      <td>HTTP test fails</td>
+      <td>Check firewalls, Docker port mappings, ingress service.</td>
+    </tr>
+    <tr>
+      <td>Python imports fail</td>
+      <td>Missing dependencies → re-run <code>pip install -r requirements.txt</code>.</td>
+    </tr>
+    <tr>
+      <td>K8s readiness fails</td>
+      <td>Inspect pod logs → <code>kubectl logs -n aiagent POD</code></td>
+    </tr>
+    <tr>
+      <td>Ingress resolves wrong IP</td>
+      <td>Update DNS A record to cluster LoadBalancer IP.</td>
+    </tr>
+    <tr>
+      <td>Redis connectivity issue</td>
+      <td>Ensure Redis service reachable: <code>kubectl get svc</code></td>
+    </tr>
+  </table>
+</div>
+
+<footer>
+  Smoke Tests Documentation — AI-Agent DevOps Suite
+</footer>
+
+</div>
+</body>
+</html>
+

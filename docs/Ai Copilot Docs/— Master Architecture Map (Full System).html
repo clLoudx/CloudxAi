@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>— Master Architecture Map (Full System)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #0b1020;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      line-height: 1.9;
+    }
+    h1 { font-size: 38px; color: #f97316; }
+    h2 { font-size: 28px; color: #fdba74; margin-top: 52px; }
+    h3 { font-size: 21px; color: #fed7aa; margin-top: 30px; }
+    section {
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 48px;
+    }
+    ul { margin-left: 22px; }
+    .logic {
+      background: #000814;
+      border-left: 6px solid #f97316;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    .truth { border-left-color: #4ade80; }
+    .fail { border-left-color: #f87171; }
+    pre {
+      background: #000814;
+      color: #e5e7eb;
+      padding: 22px;
+      border-radius: 14px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    footer {
+      margin-top: 90px;
+      opacity: 0.65;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>— Master Architecture Map (Full System)</h1>
+<p><strong>Purpose:</strong> دمج كل الطبقات في نظام واحد يعمل، يتوسع، ويتطور ذاتيًا</p>
+
+<section>
+<h2>GLOBAL INPUT — What This System Is</h2>
+<div class="logic truth">
+<p>AI Copilot OS =</p>
+<ul>
+  <li>Reasoning Engine</li>
+  <li>Execution Engine</li>
+  <li>Human Interface</li>
+  <li>Admin & Evolution Control</li>
+  <li>SaaS Business Layer</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>FULL STACK — Vertical Layer Map</h2>
+<pre><code>┌────────────────────────────────────────────┐
+│ UI / Dashboard (User + Admin)              │
+├────────────────────────────────────────────┤
+│ SaaS Layer (Auth • Orgs • Quotas • Billing)│
+├────────────────────────────────────────────┤
+│ Intelligence Layer (STEP 8)                │
+├────────────────────────────────────────────┤
+│ AI Orchestration Core (STEP 3)             │
+├────────────────────────────────────────────┤
+│ Tooling & Execution (CMD • FS • Docker)    │
+├────────────────────────────────────────────┤
+│ AI Providers (GPT • Claude • Ollama • etc) │
+└────────────────────────────────────────────┘
+</code></pre>
+</section>
+
+<section>
+<h2>HORIZONTAL FLOW — End-to-End Logic</h2>
+<pre><code>User Input
+ → Context Parsing
+ → Knowledge Cross-Reference
+ → Planning & Reasoning
+ → Tool Execution
+ → Verification & Tests
+ → Memory Update
+ → UI Feedback
+</code></pre>
+<div class="logic truth">
+<p>Every arrow is observable, logged, and reversible.</p>
+</div>
+</section>
+
+<section>
+<h2>CONTROL PLANES</h2>
+<h3>User Control Plane</h3>
+<ul>
+  <li>Chat & Commands</li>
+  <li>Project Context</li>
+  <li>Execution Control</li>
+</ul>
+
+<h3>Admin Control Plane</h3>
+<ul>
+  <li>System Metrics</li>
+  <li>Upgrade Proposals</li>
+  <li>Safety Overrides</li>
+</ul>
+</section>
+
+<section>
+<h2>DATA & MEMORY ARCHITECTURE</h2>
+<pre><code>Short-Term Memory → Session Context
+Long-Term Memory  → Project Knowledge
+System Memory    → Metrics / Failures / Patterns
+</code></pre>
+</section>
+
+<section>
+<h2>AUTO-UPGRADE & SELF-EVOLUTION LOOP</h2>
+<pre><code>Observe
+ → Analyze
+ → Propose Change
+ → Sandbox Test
+ → Human Approval
+ → Deploy
+ → Monitor
+ → Rollback (if needed)
+</code></pre>
+<div class="logic truth">
+<p>No silent self-mutation. Evolution is controlled.</p>
+</div>
+</section>
+
+<section>
+<h2>SECURITY & ISOLATION MODEL</h2>
+<div class="logic fail">
+<ul>
+  <li>No shared execution state</li>
+  <li>No cross-tenant memory</li>
+  <li>No hidden permissions</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>SCALABILITY MODEL</h2>
+<div class="logic truth">
+<ul>
+  <li>Stateless services</li>
+  <li>Horizontal scaling</li>
+  <li>Cost linear to usage</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>FINAL VALIDATION — System Coherence Check</h2>
+<div class="logic truth">
+<ul>
+  <li>Each layer has one responsibility</li>
+  <li>No circular dependencies</li>
+  <li>Failures are contained</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>OUTPUT — What STEP 9 Delivers</h2>
+<div class="logic truth">
+<ul>
+  <li>Complete reference architecture</li>
+  <li>Blueprint for engineering teams</li>
+  <li>Foundation for long-term evolution</li>
+</ul>
+</div>
+</section>
+
+<footer>
+<p>STEP 9 — Master Architecture Map · Max-Logic · Truth-Only</p>
+</footer>
+
+</body>
+</html>
+

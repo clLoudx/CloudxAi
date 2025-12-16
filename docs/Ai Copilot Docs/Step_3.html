@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 3 — Cross-Reference Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 32px;
+    }
+    h1, h2, h3 {
+      color: #58a6ff;
+    }
+    h1 {
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 12px;
+    }
+    section {
+      margin-bottom: 48px;
+    }
+    pre {
+      background: #161b22;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    code {
+      color: #d2a8ff;
+    }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning {
+      color: #ff7b72;
+      font-weight: bold;
+    }
+    .truth {
+      color: #7ee787;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>STEP 3 — Cross-Reference & Structural Validation Engine</h1>
+<p class="truth">Max-Logic • Truth-Only • Architecture Before Code</p>
+
+<section>
+  <h2>1. Position in the Reasoning Pipeline</h2>
+  <pre><code>STEP 1 → Intent (What is required?)
+STEP 2 → Context (What exists?)
+STEP 3 → Cross-Reference (Is it structurally valid?)</code></pre>
+  <p>
+    STEP 3 is the architectural conscience of the system.
+    It prevents building correct code on a wrong model.
+  </p>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">Most software failures are architectural, not syntactic.</p>
+    <p>
+      STEP 3 exists to ensure that the requested change fits
+      within proven and coherent system structures.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Inputs</h2>
+  <pre><code>Inputs:
+- Structured Intent (STEP 1)
+- Context Snapshot (STEP 2)
+- Verified Architecture Archetypes
+- Known Anti-Pattern Library</code></pre>
+</section>
+
+<section>
+  <h2>4. What Cross-Reference Means (Strict)</h2>
+  <p>
+    Cross-referencing is not searching the internet.
+    It is comparing the current system against known, validated structural models.
+  </p>
+  <ul>
+    <li>Monolith</li>
+    <li>Layered Backend</li>
+    <li>Event-Driven System</li>
+    <li>CLI Toolchain</li>
+    <li>AI Agent Loop</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Internal Architecture</h2>
+  <pre><code>Cross-Reference Engine
+ ├─ Archetype Matcher
+ ├─ Structural Comparator
+ ├─ Anti-Pattern Detector
+ ├─ Capability Aligner
+ └─ Confidence Evaluator</code></pre>
+</section>
+
+<section>
+  <h2>6. Archetype Detection</h2>
+  <p>
+    The engine determines the closest matching architecture model
+    without forcing a redesign.
+  </p>
+  <pre><code>Detected Archetype:
+- Primary
+- Secondary (if hybrid)
+- Confidence Score</code></pre>
+</section>
+
+<section>
+  <h2>7. Structural Mismatch Detection</h2>
+  <ul>
+    <li>Intent requires async but system is sync-only</li>
+    <li>Requested scale exceeds architecture limits</li>
+    <li>Stateful logic in stateless layers</li>
+  </ul>
+  <p class="warning">Mismatches do not stop execution — they constrain it.</p>
+</section>
+
+<section>
+  <h2>8. Anti-Pattern Detection</h2>
+  <pre><code>Examples:
+- God objects / files
+- Circular dependencies
+- Business logic in controllers
+- Tight coupling to infrastructure</code></pre>
+  <p>
+    Anti-patterns increase execution risk and reduce planner freedom.
+  </p>
+</section>
+
+<section>
+  <h2>9. Capability Alignment</h2>
+  <p>
+    The engine checks whether the system can realistically support the intent
+    without violating constraints.
+  </p>
+  <pre><code>Alignment Results:
+- Fully compatible
+- Compatible with constraints
+- Incompatible (requires redesign)</code></pre>
+</section>
+
+<section>
+  <h2>10. Output Structure</h2>
+  <pre><code>CrossReferenceReport {
+  detected_archetype: string
+  mismatches: string[]
+  anti_patterns: string[]
+  capability_alignment: string
+  confidence_level: low | medium | high
+}</code></pre>
+</section>
+
+<section>
+  <h2>11. Validation Rules</h2>
+  <div class="box">
+    <ul>
+      <li>No archetype forcing</li>
+      <li>No speculative redesign</li>
+      <li>No execution with low confidence</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>12. Output Guarantee</h2>
+  <p class="truth">
+    After STEP 3, the system knows whether the requested change
+    belongs to this architecture or not.
+  </p>
+  <p>
+    This prevents long-term technical debt at the planning stage.
+  </p>
+</section>
+
+<section>
+  <h2>13. Handoff to STEP 4</h2>
+  <pre><code>STEP 3 Output → CrossReferenceReport
+        ↓
+STEP 4 Input → Inference & Gap Analysis</code></pre>
+</section>
+
+</body>
+</html>
+

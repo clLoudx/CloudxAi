@@ -1,0 +1,38 @@
+# Patch: merge-healthcheck.patch
+# Description: Merge ai-agent/modules/healthcheck.sh into devops/tools/healthcheck.sh
+# Date: 2025-01-27
+# Status: Applied (documentation only - changes already made)
+
+# This patch documents the healthcheck module consolidation.
+
+# Source: ai-agent/modules/healthcheck.sh (348 lines)
+# Target: devops/tools/healthcheck.sh (canonical location)
+
+# Merged functions:
+# - tcp_check
+# - http_check_with_retry
+# - tls_check
+# - systemd_service_ready
+# - docker_container_healthy
+# - generate_compose_healthcheck_snippet
+# - generate_k8s_probe_yaml
+# - post_deploy_smoke (VERIFIED: exists at line 210)
+# - wait_for_port
+
+# Header added to devops/tools/healthcheck.sh:
+# #!/usr/bin/env bash
+# #
+# # devops/tools/healthcheck.sh - Canonical healthcheck module
+# # Health checks, smoke tests and helpers for AI Agent installer
+# #
+# # MERGED: This file contains the complete healthcheck implementation
+# # merged from ai-agent/modules/healthcheck.sh on 2025-01-27
+# #
+
+# Archived:
+# - ai-agent/modules/healthcheck.sh → .deprecated/healthcheck-module-YYYYMMDD_HHMMSS.sh
+
+# Verification:
+# Run: grep -q "post_deploy_smoke" devops/tools/healthcheck.sh && echo "OK" || echo "FAIL"
+# Expected: OK
+

@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aiagent-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: aiagent-web }
+  template:
+    metadata:
+      labels: { app: aiagent-web }
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports: [{ containerPort: {{ .Values.service.port }} }]
+          readinessProbe:
+            httpGet: { path: /healthz, port: {{ .Values.service.port }} }

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aiagent
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: aiagent
+  template:
+    metadata:
+      labels:
+        app: aiagent
+    spec:
+      containers:
+      - name: aiagent
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 8000
+        env:
+{{- range $key, $val := .Values.env }}
+        - name: {{ $key }}
+          value: "{{ $val }}"
+{{- end }}
+        resources:
+{{- toYaml .Values.resources | nindent 12 }}
+

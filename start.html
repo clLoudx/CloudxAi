@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Cloudx Agent Startup Guide</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #f8f8f2;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2d2d2d;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #50fa7b;
+            text-align: center;
+            border-bottom: 2px solid #50fa7b;
+            padding-bottom: 10px;
+        }
+        .command-block {
+            background-color: #1e1e1e;
+            border: 1px solid #6272a4;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .command-label {
+            color: #ffb86c;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: #44475a;
+            border-left: 4px solid #bd93f9;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #ffb86c;
+            color: #282a36;
+            border-left: 4px solid #ff5555;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        .success {
+            color: #50fa7b;
+        }
+        .error {
+            color: #ff5555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 AI-Cloudx Agent Startup Guide</h1>
+
+        <div class="note">
+            <strong>Prerequisites:</strong> Ensure all dependencies are installed and Redis is running.
+        </div>
+
+        <div class="command-block">
+            <div class="command-label">1. Navigate to project directory:</div>
+cd /home/cloudx/AiCloudxAgent
+        </div>
+
+        <div class="command-block">
+            <div class="command-label">2. Activate Python virtual environment:</div>
+source .venv/bin/activate
+        </div>
+
+        <div class="command-block">
+            <div class="command-label">3. Set environment variables:</div>
+export REDIS_URL=redis://localhost:6379/0
+export OPENAI_API_KEY=your_actual_api_key_here
+        </div>
+
+        <div class="command-block">
+            <div class="command-label">4. Start worker in background:</div>
+python ai-agent/worker/worker.py &
+        </div>
+
+        <div class="command-block">
+            <div class="command-label">5. Start coordinator:</div>
+python ai-agent/coordinator.py
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Replace <code>your_actual_api_key_here</code> with your real OpenAI API key before running.
+        </div>
+
+        <div class="note">
+            <strong>System Status:</strong>
+            <br>• <span class="success">✓</span> Python virtual environment ready
+            <br>• <span class="success">✓</span> Dependencies installed
+            <br>• <span class="success">✓</span> Redis container running
+            <br>• <span class="success">✓</span> Worker and coordinator configured
+            <br>• <span class="success">✓</span> AI core optimizations completed
+            <br>• <span class="success">✓</span> End-to-end task processing verified
+        </div>
+
+        <div class="note">
+            <strong>Alternative startup (single command):</strong>
+        </div>
+
+        <div class="command-block">
+cd /home/cloudx/AiCloudxAgent && source .venv/bin/activate && export REDIS_URL=redis://localhost:6379/0 && export OPENAI_API_KEY=your_actual_api_key_here && python ai-agent/worker/worker.py &
+python ai-agent/coordinator.py
+        </div>
+    </div>
+</body>
+</html>

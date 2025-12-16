@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>FAQ</title><link rel="stylesheet" href="styles.css"></head><body>
+<header class="container"><h1>FAQ</h1></header>
+<div class="layout container">
+<aside class="sidebar"><h3>Common</h3><ul><li>How to add a new agent?</li><li>How to change models?</li></ul></aside>
+<main class="content">
+<section class="card"><h2>How to add a new agent?</h2>
+<p>Add an entry in <code>ai/prompt_templates/&lt;agent&gt;.json</code> and expose CRUD endpoints in <code>/api/agents</code>. Persist agents in agents.json or DB.</p>
+</section>
+<section class="card"><h2>How to change models per agent?</h2>
+<p>Set model field in agent config and the adapter will pick it up. Implement provider selection in ai/adapter.</p>
+</section>
+</main></div><footer class="footer">For further questions, refer to Developer Guide.</footer><script src="scripts.js"></script></body></html>

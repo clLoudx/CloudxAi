@@ -1,0 +1,9 @@
+{
+    "windowsaistudio.enableRemoteFine-tuningAndInference": true,
+    "git.ignoreLimitWarning": true,
+    "python.testing.pytestArgs": [
+        "tools"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

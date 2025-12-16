@@ -1,0 +1,330 @@
+Project structure map
+
+Frontend (React + Tailwind + Vite) — all files
+
+Backend (Node/Express stub API) — all files
+
+Installer integration hooks — all files
+
+Tests — all files
+
+You can then copy/paste each file into your directory exactly as shown.
+
+✅ STEP 1 — Full Project Structure (copy this map)
+aiagent-ui/
+│
+├── frontend/
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── src/
+│       ├── main.jsx
+│       ├── App.jsx
+│       ├── api/client.js
+│       ├── api/index.js
+│       ├── components/
+│       │   ├── Sidebar.jsx
+│       │   ├── ProjectList.jsx
+│       │   ├── ChatWindow.jsx
+│       │   ├── MessageBubble.jsx
+│       │   ├── PersonaSelector.jsx
+│       │   ├── ToolsPanel.jsx
+│       ├── __tests__/
+│       │   └── App.test.jsx
+│       └── styles.css
+│
+├── backend/
+│   ├── package.json
+│   ├── src/
+│   │   ├── index.js
+│   │   ├── api.js
+│   │   ├── tools.js
+│   └── scripts/
+│       └── smoke_test.sh
+│
+└── installer_hooks/
+    └── deploy_frontend.sh
+
+✅ STEP 2 — FRONTEND FILES
+
+I will now output every file, starting with the React/Vite/Tailwind frontend.
+
+📄 FILE: frontend/package.json
+{
+  "name": "aiagent-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3",
+    "vite": "^4.5.0",
+    "vitest": "^0.34.6"
+  }
+}
+
+📄 FILE: frontend/index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI Agent – Multi-Project Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body class="bg-gray-900 text-gray-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+📄 FILE: frontend/vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    strictPort: true
+  }
+})
+
+📄 FILE: frontend/tailwind.config.js
+module.exports = {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  theme: {
+    extend: {}
+  },
+  plugins: []
+}
+
+📄 FILE: frontend/postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {}
+  }
+};
+
+📄 FILE: frontend/src/styles.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  height: 100%;
+}
+
+📄 FILE: frontend/src/main.jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./styles.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+📄 FILE: frontend/src/App.jsx
+import React, { useState, useEffect } from "react";
+import Sidebar from "./components/Sidebar.jsx";
+import ChatWindow from "./components/ChatWindow.jsx";
+import PersonaSelector from "./components/PersonaSelector.jsx";
+import ToolsPanel from "./components/ToolsPanel.jsx";
+import api from "./api";
+
+export default function App() {
+  const [projects, setProjects] = useState([]);
+  const [activeProject, setActiveProject] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [activePersona, setActivePersona] = useState("developer");
+
+  useEffect(() => {
+    api.getProjects().then(setProjects);
+  }, []);
+
+  const sendMessage = async (content) => {
+    const result = await api.sendMessage(activeProject, activePersona, content);
+    setMessages((m) => [...m, result.user, result.ai]);
+  };
+
+  return (
+    <div className="flex h-screen">
+      <Sidebar
+        projects={projects}
+        active={activeProject}
+        onSelect={setActiveProject}
+      />
+
+      <div className="flex flex-col flex-1">
+        <div className="border-b border-gray-700 p-2 bg-gray-800">
+          <PersonaSelector value={activePersona} onChange={setActivePersona} />
+        </div>
+
+        <ChatWindow messages={messages} onSend={sendMessage} />
+
+        <ToolsPanel />
+      </div>
+    </div>
+  );
+}
+
+📄 FILE: frontend/src/api/client.js
+import axios from "axios";
+
+export const client = axios.create({
+  baseURL: "/api",
+  timeout: 20000
+});
+
+📄 FILE: frontend/src/api/index.js
+import { client } from "./client";
+
+export default {
+  async getProjects() {
+    const res = await client.get("/projects");
+    return res.data.projects;
+  },
+
+  async sendMessage(projectId, persona, content) {
+    const res = await client.post(`/projects/${projectId}/chat`, {
+      persona,
+      content
+    });
+    return res.data;
+  },
+
+  async runTool(toolName, args = {}) {
+    const res = await client.post("/tools/run", { toolName, args });
+    return res.data;
+  },
+
+  async health() {
+    return client.get("/health");
+  }
+};
+
+📄 FILE: frontend/src/components/Sidebar.jsx
+import React from "react";
+
+export default function Sidebar({ projects, active, onSelect }) {
+  return (
+    <div className="w-60 bg-gray-900 border-r border-gray-700 p-3">
+      <h2 className="text-lg font-bold mb-4">Projects</h2>
+
+      {projects.map((p) => (
+        <button
+          key={p.id}
+          onClick={() => onSelect(p.id)}
+          className={`block w-full text-left px-3 py-2 rounded mb-2 ${
+            active === p.id ? "bg-blue-600" : "bg-gray-800"
+          }`}
+        >
+          {p.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+📄 FILE: frontend/src/components/ChatWindow.jsx
+import React, { useState } from "react";
+import MessageBubble from "./MessageBubble.jsx";
+
+export default function ChatWindow({ messages, onSend }) {
+  const [text, setText] = useState("");
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (text.trim()) {
+      onSend(text);
+      setText("");
+    }
+  };
+
+  return (
+    <div className="flex flex-col flex-1 bg-gray-800">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.map((m, i) => (
+          <MessageBubble key={i} role={m.role} content={m.content} />
+        ))}
+      </div>
+
+      <form onSubmit={submit} className="p-3 border-t border-gray-700">
+        <input
+          className="w-full p-3 rounded bg-gray-900 text-white"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Message…"
+        />
+      </form>
+    </div>
+  );
+}
+
+📄 FILE: frontend/src/components/MessageBubble.jsx
+import React from "react";
+
+export default function MessageBubble({ role, content }) {
+  const color = role === "user" ? "bg-blue-600" : "bg-gray-700";
+
+  return (
+    <div className={`p-3 rounded ${color} max-w-2xl`}>
+      {content}
+    </div>
+  );
+}
+
+📄 FILE: frontend/src/components/PersonaSelector.jsx
+import React from "react";
+
+export default function PersonaSelector({ value, onChange }) {
+  const personas = ["developer", "commands", "docs", "system"];
+
+  return (
+    <select
+      className="bg-gray-900 p-2 rounded"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {personas.map((p) => (
+        <option key={p} value={p}>
+          {p}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+📄 FILE: frontend/src/components/ToolsPanel.jsx
+import React from "react";
+
+export default function ToolsPanel() {
+  return (
+    <div className="bg-gray-900 border-t border-gray-700 p-3">
+      <h3 className="font-bold mb-2">Tools</h3>
+      <p className="text-sm opacity-70">Example tools panel (extend me)</p>
+    </div>
+  );
+}
+
+📄 FILE: frontend/src/__tests__/App.test.jsx
+import { test, expect } from "vitest";
+import App from "../App.jsx";
+
+test("App component loads", () => {
+  expect(typeof App).toBe("function");
+});
+

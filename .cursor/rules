@@ -1,0 +1,24 @@
+# Cursor rules for AiCloudxAgent repair & patching
+# Max-Logic mode: deterministic, conservative, non-destructive
+
+# Primary normalization rules (applied in order)
+normalize.install_path=/opt/ai-agent
+normalize.helm_chart=devops/helm/aiagent
+normalize.healthcheck=devops/tools/healthcheck.sh
+normalize.smoke_tests=devops/smoke_tests/
+normalize.systemd=devops/systemd/aiagent.service
+
+# Behavior
+behavior.backup_on_write=true
+behavior.create_patches=true
+behavior.fail_on_hallucination=true
+behavior.report_unchanged=true
+
+# Files to treat as authoritative (do not delete)
+authoritative: devops/helm/aiagent/**, devops/tools/healthcheck.sh, devops/systemd/**, installers/**
+
+# Blacklist (do not modify without human consent)
+blacklist: .github/**/protected-merge.yml
+
+# Max concurrency for patch generation
+concurrency=3

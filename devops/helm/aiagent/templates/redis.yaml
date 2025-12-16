@@ -1,0 +1,22 @@
+{{- if and .Values.redis.enabled (not .Values.redis.architecture) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aiagent-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aiagent-redis
+  template:
+    metadata:
+      labels:
+        app: aiagent-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+{{- end }}
+

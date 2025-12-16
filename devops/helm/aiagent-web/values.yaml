@@ -1,0 +1,11 @@
+image:
+  repository: ghcr.io/your-org/aiagent_web
+  tag: latest
+service:
+  port: 8000
+ingress:
+  enabled: true
+  host: your.domain.com
+  tls:
+    enabled: true
+    secretName: aiagent-tls

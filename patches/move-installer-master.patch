@@ -1,0 +1,24 @@
+diff --git a/installer_master.sh b/installers/installer_master.sh
+similarity index 99%
+rename from installer_master.sh
+rename to installers/installer_master.sh
+index 0000000..1111111 100644
+--- a/installer_master.sh
++++ b/installers/installer_master.sh
+@@ -16,7 +16,7 @@ set -o pipefail
+ # ---------------------------
+ # Paths & runtime env (dynamic)
+ # ---------------------------
+-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
++REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+ LOGFILE="/var/log/ai-agent-installer-master.log"
+ mkdir -p "$(dirname "$LOGFILE")"
+ touch "$LOGFILE"
+@@ -135,7 +135,7 @@ save_snapshot(){
+ usage(){
+   cat <<EOF
+-installer_master.sh - master installer & deployer
++installers/installer_master.sh - master installer & deployer
+ 
+ Usage:
+   sudo ./installer_master.sh [options]

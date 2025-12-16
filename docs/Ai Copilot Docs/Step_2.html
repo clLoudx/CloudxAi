@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 2 — Context Parsing Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 32px;
+    }
+    h1, h2, h3 {
+      color: #58a6ff;
+    }
+    h1 {
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 12px;
+    }
+    section {
+      margin-bottom: 48px;
+    }
+    pre {
+      background: #161b22;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    code {
+      color: #d2a8ff;
+    }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning {
+      color: #ff7b72;
+      font-weight: bold;
+    }
+    .truth {
+      color: #7ee787;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>STEP 2 — Context Parsing Engine</h1>
+<p class="truth">Max‑Logic • Truth‑Only • Zero Contradictions</p>
+
+<section>
+  <h2>1. Position in the Global Reasoning Pipeline</h2>
+  <pre><code>STEP 1: Intent Parsing (What do we want?)
+STEP 2: Context Parsing (What exists now?)
+STEP 3: Cross‑Reference (Is it logically compatible?)</code></pre>
+  <p>
+    STEP 2 does <strong>not</strong> reason, plan, or generate code.
+    Its only role is to transform a real system into a <em>machine‑readable truth map</em>.
+  </p>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">An AI that does not fully understand the current state of the system is guaranteed to hallucinate.</p>
+    <p>
+      Context Parsing exists to eliminate assumption.
+      No guesses. No imagination. Only observable facts.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Input to STEP 2</h2>
+  <p>STEP 2 consumes verified outputs from STEP 1 plus the raw system environment.</p>
+  <pre><code>Inputs:
+- Structured Intent (from STEP 1)
+- File system tree
+- Codebase contents
+- Dependency manifests
+- Runtime configs
+- Git state
+- Tool availability</code></pre>
+</section>
+
+<section>
+  <h2>4. What “Context” Means (Strict Definition)</h2>
+  <ul>
+    <li>Directory and file structure</li>
+    <li>Languages and frameworks in use</li>
+    <li>Entrypoints and execution flow</li>
+    <li>Configuration files and secrets references</li>
+    <li>Test presence and coverage signals</li>
+    <li>Infrastructure hints (Docker, CI, scripts)</li>
+  </ul>
+  <p class="warning">Anything not observable is treated as unknown — not assumed.</p>
+</section>
+
+<section>
+  <h2>5. Internal Architecture of the Context Parsing Engine</h2>
+  <pre><code>Context Parser
+ ├─ File System Scanner
+ ├─ Language & Framework Detector
+ ├─ Dependency Graph Builder
+ ├─ Runtime & Entrypoint Analyzer
+ ├─ Config & Environment Reader
+ └─ Context Normalizer</code></pre>
+</section>
+
+<section>
+  <h2>6. Normalized Context Output (Machine Truth)</h2>
+  <pre><code>ContextSnapshot {
+  project_type: string
+  languages: string[]
+  frameworks: string[]
+  entrypoints: string[]
+  dependencies: Graph
+  configs: string[]
+  scripts: string[]
+  test_state: none | partial | full
+  infra_signals: string[]
+  risk_flags: string[]
+}</code></pre>
+</section>
+
+<section>
+  <h2>7. Risk & Uncertainty Detection</h2>
+  <p>STEP 2 must surface danger early.</p>
+  <ul>
+    <li>Missing package locks</li>
+    <li>Multiple entrypoints</li>
+    <li>Unclear execution command</li>
+    <li>Dead or unused modules</li>
+    <li>Configuration drift</li>
+  </ul>
+  <p class="warning">If risk is high, downstream agents are restricted.</p>
+</section>
+
+<section>
+  <h2>8. Validation Rules</h2>
+  <div class="box">
+    <ul>
+      <li>No inferred structure without evidence</li>
+      <li>No framework assumption based on filenames alone</li>
+      <li>No execution until context confidence is acceptable</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>9. Output Guarantee</h2>
+  <p class="truth">
+    After STEP 2, the AI has a factual, bounded, non‑imaginary understanding
+    of the system it is about to touch.
+  </p>
+  <p>
+    All future reasoning is constrained by this snapshot.
+  </p>
+</section>
+
+<section>
+  <h2>10. Handoff to STEP 3</h2>
+  <pre><code>STEP 2 Output → ContextSnapshot
+        ↓
+STEP 3 Input → Cross‑Reference Engine</code></pre>
+  <p>
+    From this point forward, the system is no longer blind.
+  </p>
+</section>
+
+</body>
+</html>
+

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI-Agent DevOps Installation Guide</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #0f1116;
+        color: #d7d7d7;
+        font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+        line-height: 1.7;
+    }
+
+    h1, h2, h3, h4 {
+        font-weight: 700;
+        color: #fff;
+    }
+
+    h1 {
+        margin-top: 40px;
+        font-size: 42px;
+        text-shadow: 0px 0px 10px #661aff;
+    }
+
+    h2 {
+        margin-top: 30px;
+        font-size: 28px;
+    }
+
+    h3 {
+        font-size: 22px;
+    }
+
+    code {
+        background: #1d1f24;
+        padding: 3px 6px;
+        border-radius: 4px;
+        color: #8be0ff;
+        font-size: 14px;
+    }
+
+    pre {
+        background: #1d1f24;
+        padding: 15px;
+        border-radius: 10px;
+        overflow-x: auto;
+        color: #8be0ff;
+        border: 1px solid #2e3240;
+    }
+
+    .section {
+        padding: 20px 60px;
+    }
+
+    .card {
+        background: #15171d;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        border: 1px solid #22252f;
+        box-shadow: 0 0 12px #0008;
+    }
+
+    .highlight {
+        color: #8be0ff;
+        font-weight: 600;
+    }
+
+    .btn {
+        display: inline-block;
+        background: linear-gradient(135deg,#661aff,#8b3dff);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        margin-top: 10px;
+        font-weight: 600;
+    }
+
+    .table-box {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #1b1e25;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #2a2d38;
+    }
+
+    th {
+        background: #242731;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    tr:hover {
+        background: #20222b;
+    }
+
+    .toc {
+        padding: 20px 60px;
+        background: #0b0d12;
+        border-bottom: 1px solid #22252f;
+        margin-bottom: 30px;
+    }
+
+    .toc ul {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .toc li {
+        margin-bottom: 8px;
+    }
+
+    .toc a {
+        color: #8be0ff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .toc a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+</head>
+
+<body>
+
+<!-- ====================================================== -->
+<!-- TITLE -->
+<!-- ====================================================== -->
+<section class="section">
+    <h1>AI-Agent DevOps Installation & Deployment Guide</h1>
+    <p>
+        This document provides the complete, end-to-end DevOps installation workflow
+        for the AI-Agent platform — covering system installation, Kubernetes
+        deployment, Helm structure, CI pipelines, cloud provisioning, and advanced
+        cluster automation.
+    </p>
+</section>
+
+<!-- ====================================================== -->
+<!-- TABLE OF CONTENTS -->
+<!-- ====================================================== -->
+<section class="toc">
+    <h2>Table of Contents</h2>
+    <ul>
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#requirements">2. Requirements</a></li>
+        <li><a href="#local-install">3. Local Installation (SystemD Installer)</a></li>
+        <li><a href="#k8s-install">4. Kubernetes Installation (Helm Deploy)</a></li>
+        <li><a href="#helm-structure">5. Helm Chart Structure</a></li>
+        <li><a href="#ci">6. CI/CD Pipelines</a></li>
+        <li><a href="#cloud-provision">7. Cloud Cluster Provisioning</a></li>
+        <li><a href="#oneclick">8. One-Click Production Deployment</a></li>
+        <li><a href="#security">9. Security Model</a></li>
+        <li><a href="#troubleshooting">10. Troubleshooting</a></li>
+        <li><a href="#appendix">11. Appendix: File Map & Scripts</a></li>
+    </ul>
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 1: OVERVIEW -->
+<!-- ====================================================== -->
+<section class="section" id="overview">
+    <h2>1. Overview</h2>
+    <div class="card">
+        <p>
+            The <strong>AI-Agent platform</strong> is a full-stack automation system
+            built around a multi-service architecture:
+        </p>
+
+        <ul>
+            <li><strong>Web service</strong> → Flask + Gunicorn + Eventlet</li>
+            <li><strong>Worker</strong> → RQ worker + Redis</li>
+            <li><strong>Autoscaling cluster mode</strong> (K8s or VM-based)</li>
+            <li><strong>DevOps automation</strong> → Helm, CI/CD, smoke tests</li>
+            <li><strong>Installers</strong> → local, cloud, cluster, kubernetes</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 2: REQUIREMENTS -->
+<!-- ====================================================== -->
+<section class="section" id="requirements">
+    <h2>2. Requirements</h2>
+
+    <div class="card">
+        <h3>Minimum System Requirements</h3>
+        <div class="table-box">
+            <table>
+                <tr><th>Component</th><th>Requirement</th></tr>
+                <tr><td>CPU</td><td>2 cores minimum (4 recommended)</td></tr>
+                <tr><td>RAM</td><td>4GB minimum (8GB recommended)</td></tr>
+                <tr><td>Disk</td><td>4GB free (local) / 20GB cluster</td></tr>
+                <tr><td>OS</td><td>Ubuntu 20.04+ / Debian 11+</td></tr>
+                <tr><td>Container Runtime</td><td>Docker or containerd</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Required Tools (automatically installed by installer)</h3>
+        <ul>
+            <li>Python3, pip, venv</li>
+            <li>Git</li>
+            <li>Docker (optional for builds)</li>
+            <li>kubectl + helm (for k8s)</li>
+            <li>Redis (local mode)</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 3: LOCAL INSTALLATION -->
+<!-- ====================================================== -->
+<section class="section" id="local-install">
+<h2>3. Local Installation (SystemD)</h2>
+
+<div class="card">
+<h3>Run the main installer</h3>
+<pre>
+sudo ./installer.sh --non-interactive
+</pre>
+<p>The installer performs:</p>
+<ul>
+    <li>Create <code>aiagent</code> system user</li>
+    <li>Setup virtualenv</li>
+    <li>Install dependencies</li>
+    <li>Install SystemD services</li>
+    <li>Install nginx reverse-proxy</li>
+    <li>Run smoke tests</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Start services</h3>
+<pre>
+sudo systemctl start aiagent-app
+sudo systemctl start aiagent-rq
+</pre>
+</div>
+
+<div class="card">
+<h3>Verify installation</h3>
+<pre>
+curl http://127.0.0.1:8000/api/overview
+curl http://127.0.0.1:8000/metrics
+</pre>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 4: KUBERNETES INSTALLATION -->
+<!-- ====================================================== -->
+<section class="section" id="k8s-install">
+<h2>4. Kubernetes Installation (Helm)</h2>
+
+<div class="card">
+<h3>Deploy using installer</h3>
+<pre>
+sudo ./installer_master.sh \
+    --kube-deploy \
+    --kubeconfig ~/.kube/config \
+    --namespace aiagent \
+    --production-verify "kubectl -n aiagent get pods"
+</pre>
+</div>
+
+<h3>Releases included</h3>
+<ul>
+    <li>aiagent</li>
+    <li>aiagent-web</li>
+    <li>aiagent-worker</li>
+</ul>
+
+<div class="card">
+<h3>Post-deploy checks</h3>
+<pre>
+kubectl -n aiagent get all
+kubectl -n aiagent logs deploy/aiagent-web
+</pre>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 5: HELM CHART STRUCTURE -->
+<!-- ====================================================== -->
+<section class="section" id="helm-structure">
+<h2>5. Helm Chart Structure</h2>
+
+<div class="card">
+<h3>Main Helm chart root</h3>
+<pre>
+devops/helm/aiagent/
+</pre>
+</div>
+
+<h3>Included templates</h3>
+<ul>
+    <li>deployment.yaml</li>
+    <li>service.yaml</li>
+    <li>ingress.yaml</li>
+    <li>redis.yaml + redis-secret.yaml</li>
+    <li>issuer.yaml + certificate.yaml</li>
+</ul>
+
+<div class="card">
+<h3>Subcharts</h3>
+<pre>
+devops/helm/aiagent-web/
+devops/helm/aiagent-worker/
+</pre>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 6: CI/CD -->
+<!-- ====================================================== -->
+<section class="section" id="ci">
+<h2>6. Continuous Integration & Deployment</h2>
+
+<div class="card">
+<h3>CI Workflow Files</h3>
+<pre>
+.github/workflows/ci.yml
+.github/workflows/build-zip-and-test.yml
+.github/workflows/cd-helm-deploy.yml
+.github/workflows/ci-smoke.yml
+</pre>
+</div>
+
+<h3>CI Pipeline Features</h3>
+<ul>
+    <li>Linting & syntax check</li>
+    <li>Unit tests (pytest)</li>
+    <li>Smoke tests</li>
+    <li>ZIP build artifact</li>
+    <li>Cluster deploy (optional)</li>
+</ul>
+
+<div class="card">
+<h3>Run tests manually</h3>
+<pre>
+pytest -q
+bash devops/smoke_tests/ci_wrapper.sh
+</pre>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 7: CLOUD PROVISIONING -->
+<!-- ====================================================== -->
+<section class="section" id="cloud-provision">
+<h2>7. Cloud Cluster Provisioning</h2>
+
+<div class="card">
+<h3>Supported Providers</h3>
+<ul>
+    <li>DigitalOcean → <code>cloud-provisioners/do_create_cluster.sh</code></li>
+    <li>AWS EKS → <code>cloud-provisioners/aws_create_cluster.sh</code></li>
+    <li>Google GKE → <code>cloud-provisioners/gcp_create_cluster.sh</code></li>
+</ul>
+</div>
+
+<h3>Provision & Deploy Example</h3>
+<pre>
+./cloud-provisioners/do_create_cluster.sh
+./oneclick_cluster_install.sh
+</pre>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 8: ONE CLICK -->
+<!-- ====================================================== -->
+<section class="section" id="oneclick">
+<h2>8. One-Click Production Deployment</h2>
+
+<div class="card">
+<h3>Run One-Click Installer</h3>
+<pre>
+sudo ./oneclick_cluster_install.sh
+</pre>
+<p>
+Automatically performs cluster bootstrap, dependency installation,
+Helm deployment, certificate issuance, smoke tests, and verification.
+</p>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 9: SECURITY -->
+<!-- ====================================================== -->
+<section class="section" id="security">
+<h2>9. Security Model</h2>
+
+<div class="card">
+<h3>Security Controls</h3>
+<ul>
+    <li>api/admin API key stored in <code>/etc/ai-agent/env</code></li>
+    <li>HTTPS enforced by cert-manager</li>
+    <li>Redis password stored in Kubernetes secret</li>
+    <li>Gunicorn hardened config</li>
+    <li>Nginx rate-limit middleware</li>
+</ul>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 10: TROUBLESHOOTING -->
+<!-- ====================================================== -->
+<section class="section" id="troubleshooting">
+<h2>10. Troubleshooting</h2>
+
+<div class="card">
+<h3>Inspect Logs</h3>
+<pre>
+journalctl -u aiagent-app -f
+journalctl -u aiagent-rq -f
+kubectl -n aiagent logs -l app=aiagent-web
+</pre>
+</div>
+
+<div class="card">
+<h3>Common Issues</h3>
+<ul>
+    <li>Redis connection failure → check redis-secret.yaml</li>
+    <li>K8s ingress 404 → check host in values.yaml</li>
+    <li>SSL errors → issuer misconfigured</li>
+    <li>Helm rollback needed → run helm rollback aiagent 1</li>
+</ul>
+</div>
+
+</section>
+
+<!-- ====================================================== -->
+<!-- SECTION 11: APPENDIX -->
+<!-- ====================================================== -->
+<section class="section" id="appendix">
+<h2>11. Appendix: File Map & Script Overview</h2>
+
+<div class="card">
+<h3>Main Installers</h3>
+<pre>
+installer.sh
+installer_master.sh
+oneclick_cluster_install.sh
+</pre>
+</div>
+
+<div class="card">
+<h3>DevOps Tools</h3>
+<pre>
+devops/tools/healthcheck.sh
+devops/tools/post_deploy_smoke.sh
+devops/tools/self_test_bundle.sh
+</pre>
+</div>
+
+<div class="card">
+<h3>Helm Charts</h3>
+<pre>
+devops/helm/aiagent/
+devops/helm/aiagent-web/
+devops/helm/aiagent-worker/
+</pre>
+</div>
+
+</section>
+
+</body>
+</html>
+

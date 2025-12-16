@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AI-Agent — Cloud Provisioning Guide</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f1720;
+      --card:#0b1220;
+      --muted:#9aa6b2;
+      --accent:#2dd4bf;
+      --accent2:#60a5fa;
+      --panel:#07101a;
+      --white:#e6eef6;
+    }
+    body{ margin:0; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:linear-gradient(180deg,#071020 0%, #071226 100%); color:var(--white); }
+    header{ padding:36px 40px; border-bottom: 1px solid rgba(255,255,255,0.03);}
+    header h1{ margin:0; font-size:28px; }
+    header p{ margin:6px 0 0; color:var(--muted); }
+    .container{ max-width:1200px; margin:28px auto; padding:20px; }
+    .card{ background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:22px; margin-bottom:20px; box-shadow: 0 8px 30px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03); }
+    h2{ color:var(--accent2); margin-top:0; }
+    h3{ color:var(--accent); }
+    pre{ background:#07111a; padding:14px; border-radius:8px; overflow:auto; color:#dbeafe; font-size:0.9rem; border:1px solid rgba(255,255,255,0.03); }
+    ul{ color:var(--muted); }
+    .note{ background: rgba(45,212,191,0.06); border-left:4px solid var(--accent); padding:12px; border-radius:6px; color:#c7fff6; margin:12px 0; }
+    .warning{ background: rgba(255,82,82,0.06); border-left:4px solid #ff5252; padding:12px; border-radius:6px; color:#ffdede; margin:12px 0; }
+    table{ width:100%; border-collapse:collapse; margin:10px 0; }
+    table th, table td{ text-align:left; padding:8px 10px; border-bottom:1px dashed rgba(255,255,255,0.03); color:var(--muted); }
+    footer{ color:var(--muted); text-align:center; padding:26px 0; font-size:0.9rem; }
+    a{ color:var(--accent2); text-decoration:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>AI-Agent — Cloud Provisioning & Cluster Bootstrapping</h1>
+      <p>One-page practical guide: provision Kubernetes clusters on DigitalOcean / GCP / AWS, bootstrap ingress, cert-manager, Redis, and deploy AI-Agent Helm charts with production-ready defaults.</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="card">
+      <h2>Goals & Constraints</h2>
+      <ul>
+        <li>Provide deterministic, minimal manual steps to create a Kubernetes cluster on major clouds (DO / GCP / AWS).</li>
+        <li>Offer secure defaults (RBAC, network policies, node sizes, autoscaling hints).</li>
+        <li>Include post-provision automation: install <code>ingress-nginx</code>, <code>cert-manager</code>, Redis (Helm), and deploy the AI-Agent Helm charts.</li>
+        <li>Provide small shell scripts (one-click where possible) and Terraform guidance for more controlled infra-as-code setups.</li>
+      </ul>
+      <div class="note">Assumes you have an account on the target cloud and the cloud CLIs configured locally (doctl / gcloud / aws).</div>
+    </section>
+
+    <section class="card">
+      <h2>Quick architecture (recommended)</h2>
+      <table>
+        <thead><tr><th>Component</th><th>Recommendation</th></tr></thead>
+        <tbody>
+          <tr><td>Kubernetes</td><td>Managed K8s (DO Managed K8s / GKE / EKS) — 3 nodes (t3.small / s-2vcpu-4gb) for prod; for dev 1–2 small nodes</td></tr>
+          <tr><td>Ingress</td><td><code>ingress-nginx</code> via Helm — one controller per cluster</td></tr>
+          <tr><td>TLS</td><td><code>cert-manager</code> with Let's Encrypt (production issuer) — dns-01 for wildcard, http-01 for single domains</td></tr>
+          <tr><td>Cache / Redis</td><td>Helm chart (bitnami/redis) or managed service — enable persistence and auth</td></tr>
+          <tr><td>Secrets</td><td>Kubernetes secrets + imagePullSecrets for private registries; consider sealed-secrets for GitOps</td></tr>
+          <tr><td>Monitoring</td><td>Prometheus/Grafana optional; use AI-Agent provided dashboards</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Paths & Files in repo (where auto-scripts live)</h2>
+      <ul>
+        <li><code>oneclick_cluster_install.sh</code> — (recommended target) place at repository root. <strong>Path:</strong> <code>/oneclick_cluster_install.sh</code></li>
+        <li><code>devops/helm/aiagent</code> — Helm chart to deploy AI-Agent (multiple subcharts: aiagent, aiagent-web, aiagent-worker)</li>
+        <li><code>devops/tools/deploy_from_zip.sh</code> — deploy archive on VM</li>
+        <li><code>devops/tools/post_deploy_smoke.sh</code> — smoke test wrapper</li>
+        <li><code>devops/helm/aiagent/values-production.yaml</code> — production values (ingress host, cert, imagePullSecrets)</li>
+      </ul>
+      <div class="note">The one-click script will call Helm to install prerequisites and then the AI-Agent chart.</div>
+    </section>
+
+    <section class="card">
+      <h2>One-click: DigitalOcean (doctl) — example</h2>
+      <p>Simple script to create a DO Kubernetes cluster and bootstrap everything. Save as <code>cloud-provisioners/do_create_cluster.sh</code>.</p>
+
+      <pre>
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage:
+#   ./do_create_cluster.sh --name aiagent-cluster --region nyc1 --node-size s-2vcpu-4gb --nodes 3
+
+NAME="${1:-aiagent-cluster}"
+REGION="${2:-nyc1}"
+NODE_SIZE="${3:-s-2vcpu-4gb}"
+NODE_COUNT="${4:-3}"
+
+# 1) Ensure doctl is authenticated (DO token set in env: DOCTL_API_TOKEN or run doctl auth init)
+if ! command -v doctl >/dev/null 2>&1; then
+  echo "doctl not installed; please install and configure: https://docs.digitalocean.com/reference/doctl/"
+  exit 1
+fi
+
+echo "Creating DO managed Kubernetes cluster: $NAME"
+doctl kubernetes cluster create "$NAME" --region "$REGION" --tag aiagent --version 1.27.3-do.1 --size "$NODE_SIZE" --count "$NODE_COUNT" --wait
+
+echo "Fetching kubeconfig"
+doctl kubernetes cluster kubeconfig save "$NAME"
+
+echo "Cluster created. Next: run oneclick_cluster_install.sh --kubeconfig ~/.kube/config --namespace aiagent"
+      </pre>
+
+      <div class="note">Use managed clusters. After kubeconfig saved, run the one-click installer below to bootstrap ingress & cert-manager and deploy Helm chart.</div>
+    </section>
+
+    <section class="card">
+      <h2>One-click: GCP (gcloud + GKE) — example</h2>
+
+      <pre>
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Prereqs: gcloud CLI configured, billing enabled, required IAM permissions.
+
+PROJECT="${1:-my-gcp-project}"
+ZONE="${2:-us-central1-a}"
+CLUSTER_NAME="${3:-aiagent-gke}"
+MACHINE_TYPE="${4:-e2-medium}"
+NODE_COUNT="${5:-3}"
+
+gcloud config set project "$PROJECT"
+gcloud container clusters create "$CLUSTER_NAME" \
+  --zone "$ZONE" \
+  --num-nodes "$NODE_COUNT" \
+  --machine-type "$MACHINE_TYPE" \
+  --enable-ip-alias
+
+# Fetch kubeconfig
+gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$ZONE"
+
+echo "GKE cluster ready. Run oneclick_cluster_install.sh to bootstrap and deploy."
+      </pre>
+
+      <div class="warning">For production, use regional clusters, private clusters and VPC-native networks. Use <code>gcloud beta container</code> options for autopilot or secured clusters.</div>
+    </section>
+
+    <section class="card">
+      <h2>One-click: AWS (eksctl) — example</h2>
+
+      <pre>
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLUSTER_NAME="${1:-aiagent-eks}"
+REGION="${2:-us-east-1}"
+NODE_TYPE="${3:-t3.small}"
+NODE_COUNT="${4:-3}"
+
+if ! command -v eksctl >/dev/null 2>&1; then
+  echo "Please install eksctl and configure AWS CLI."
+  exit 1
+fi
+
+eksctl create cluster --name="$CLUSTER_NAME" --region="$REGION" \
+  --nodes="$NODE_COUNT" --node-type="$NODE_TYPE" --managed
+
+# Ensure kubectl context set
+kubectl config use-context "arn:aws:eks:${REGION}:$(aws sts get-caller-identity --query Account --output text):cluster/${CLUSTER_NAME}"
+      </pre>
+
+      <div class="note">For production use dedicated node groups (spot + on-demand), cluster autoscaler, and IAM OIDC setup for IRSA (imagePullSecret, cert-manager AWS permissions).</div>
+    </section>
+
+    <section class="card">
+      <h2>oneclick_cluster_install.sh — cluster bootstrap & deploy (recommended entrypoint)</h2>
+
+      <p>Place this at repo root as <code>oneclick_cluster_install.sh</code>. It expects <code>kubectl</code> context already set (or accepts <code>--kubeconfig</code>).</p>
+
+      <pre>
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage:
+#  sudo ./oneclick_cluster_install.sh --kubeconfig ~/.kube/config --namespace aiagent --domain example.com --email admin@example.com --image-pull-secret my-registry-secret
+
+KUBECONFIG="${1:-${KUBECONFIG:-$HOME/.kube/config}}"
+NS="${2:-aiagent}"
+DOMAIN="${3:-example.com}"
+LE_EMAIL="${4:-admin@$DOMAIN}"
+IMAGE_PULL_SECRET="${5:-}"
+
+echo "Using KUBECONFIG=$KUBECONFIG"
+export KUBECONFIG
+
+# 1) Create namespace
+kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f -
+
+# 2) Helm repo updates
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add jetstack https://charts.jetstack.io
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+# 3) Install ingress-nginx (controller)
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --wait --timeout 10m
+
+# 4) Install cert-manager
+kubectl apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.crds.yaml
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager --create-namespace \
+  --wait --timeout 10m \
+  --set installCRDs=false
+
+# 5) Create production issuer (Let's Encrypt)
+cat <<EOF | kubectl -n cert-manager apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ${LE_EMAIL}
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+EOF
+
+# 6) Install Redis (Helm)
+helm upgrade --install aiagent-redis bitnami/redis \
+  --namespace "$NS" --create-namespace \
+  --set usePassword=false,architecture=standalone,persistence.enabled=false \
+  --wait --timeout 5m
+
+# 7) Add imagePullSecret to namespace if provided
+if [ -n "${IMAGE_PULL_SECRET}" ]; then
+  # assumes secret exists in cluster namespace 'kube-system' or create from dockerconfigjson
+  kubectl get secret "${IMAGE_PULL_SECRET}" -n "$NS" >/dev/null 2>&1 || \
+    kubectl create secret generic "${IMAGE_PULL_SECRET}" \
+      --from-file=.dockerconfigjson=$HOME/.docker/config.json \
+      --type=kubernetes.io/dockerconfigjson -n "$NS"
+  kubectl patch serviceaccount default -n "$NS" -p "{\"imagePullSecrets\": [{\"name\": \"${IMAGE_PULL_SECRET}\"}]}"
+fi
+
+# 8) Deploy aiagent Helm chart (assumes devops/helm/aiagent present)
+helm upgrade --install aiagent ./devops/helm/aiagent -n "$NS" \
+  -f ./devops/helm/aiagent/values-production.yaml --wait --timeout 10m
+
+# 9) Post-deploy smoke test
+./devops/tools/post_deploy_smoke.sh "$NS" aiagent-web /healthz 8000 120
+
+echo "Cluster bootstrap & aiagent deploy complete."
+      </pre>
+
+      <div class="note">This script is opinionated but safe: waits for each step and uses Helm & cert-manager recommended CRDs. Adjust versions and timeouts to match your cloud SLAs.</div>
+    </section>
+
+    <section class="card">
+      <h2>Helm values — production tips</h2>
+      <ul>
+        <li>Enable <code>readinessProbe</code> and <code>livenessProbe</code> for all pods (see <code>devops/helm/aiagent/templates</code>).</li>
+        <li>Set replica counts for web and worker tiers: <code>web.replicas: 2</code>, <code>worker.replicas: 2</code>.</li>
+        <li>Use <code>nodeSelector</code> / <code>tolerations</code> to isolate workloads.</li>
+        <li>Configure resource requests/limits for predictable scheduling.</li>
+      </ul>
+      <pre>
+# devops/helm/aiagent/values-production.yaml (excerpt)
+web:
+  replicaCount: 2
+  resources:
+    requests: { cpu: "250m", memory: "512Mi" }
+    limits:   { cpu: "1", memory: "1Gi" }
+
+worker:
+  replicaCount: 2
+ingress:
+  enabled: true
+  hosts: [ "ai.yourdomain.com" ]
+  tls:
+    - hosts: ["ai.yourdomain.com"]
+      secretName: aiagent-tls
+certManager:
+  clusterIssuer: letsencrypt-prod
+      </pre>
+    </section>
+
+    <section class="card">
+      <h2>DNS & Let's Encrypt: production notes</h2>
+      <ul>
+        <li><strong>HTTP-01</strong> is simplest for single hostnames: your domain must point to the Ingress controller's public IP.</li>
+        <li><strong>DNS-01</strong> is required for wildcard certificates; you'll need API credentials for your DNS provider (cloudflare, route53, digitalocean).</li>
+        <li>Register an ACME production issuer <code>ClusterIssuer</code> named <code>letsencrypt-prod</code>.</li>
+      </ul>
+      <div class="warning">Do not use Let's Encrypt staging in production (it issues non-trusted certs). Use staging for testing only.</div>
+    </section>
+
+    <section class="card">
+      <h2>Security & Hardening Checklist</h2>
+      <ul>
+        <li>Enable RBAC and restrict cluster-admin usage.</li>
+        <li>Run the ingress controller with a dedicated service account.</li>
+        <li>Enable network policies to limit pod-to-pod communication.</li>
+        <li>Use secrets encryption provider on Kubernetes for at-rest encryption.</li>
+        <li>Run scan for container images (e.g. trivy) in CI before push.</li>
+        <li>Use automatic imagePullPolicy: IfNotPresent and set image digests for production releases.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Terraform (optional) — minimal pattern</h2>
+      <p>If you prefer infrastructure as code, create a small Terraform module that provisions the managed cluster and outputs the kubeconfig. Example provider blocks omitted for brevity:</p>
+      <pre>
+# terraform/main.tf (pseudo)
+provider "digitalocean" { token = var.do_token }
+resource "digitalocean_kubernetes_cluster" "aiagent" {
+  name   = var.cluster_name
+  region = var.region
+  node_pool {
+    name  = "default"
+    size  = var.node_size
+    count = var.node_count
+  }
+}
+output "kube_config" {
+  value = digitalocean_kubernetes_cluster.aiagent.kube_configs[0].raw_kube_config
+}
+      </pre>
+      <div class="note">Store Terraform state securely (remote backend). Use Terraform Cloud, S3+lock, or similar.</div>
+    </section>
+
+    <section class="card">
+      <h2>Troubleshooting checklist (common failures)</h2>
+      <ol>
+        <li><strong>Helm install times out</strong> — increase <code>--wait --timeout</code> and check pod events (<code>kubectl -n &lt;ns&gt; describe pod &lt;pod&gt;</code>).</li>
+        <li><strong>cert-manager failing to issue</strong> — check issuer events (<code>kubectl -n cert-manager describe challenge</code>) and DNS records.</li>
+        <li><strong>Ingress not resolving</strong> — ensure cloud LB/external IP assigned and DNS A record points to it.</li>
+        <li><strong>Redis connection refused</strong> — verify service name <code>aiagent-redis</code> and port; check if password configured.</li>
+        <li><strong>Image pull errors</strong> — verify imagePullSecrets exist and are attached to serviceaccount.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Post-provision verification & smoke tests</h2>
+      <p>Run these commands to confirm cluster health and AI-Agent readiness:</p>
+      <pre>
+# 1) Basic k8s health
+kubectl get nodes
+kubectl get ns,svc,deploy -A
+
+# 2) Check Ingress & TLS
+kubectl -n ingress-nginx get svc
+kubectl -n cert-manager get certificates,issuers
+
+# 3) Post-deploy smoke (repo helper)
+./devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 120
+
+# 4) Run readiness test in Helm chart tests
+kubectl -n aiagent get pods | grep aiagent
+      </pre>
+    </section>
+
+    <section class="card">
+      <h2>Automation & CI Integration</h2>
+      <p>Recommended flow in your CI/CD:</p>
+      <ol>
+        <li>Build Docker images and push to registry</li>
+        <li>Build & upload release ZIP artifact</li>
+        <li>Trigger Helm deploy workflow for the target environment</li>
+        <li>Run smoke tests (post_deploy_smoke.sh)</li>
+        <li>Auto-rollback on smoke failure</li>
+      </ol>
+      <pre>
+# Example GitHub Actions step
+- name: Post-deploy smoke tests
+  run: bash devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 120
+      </pre>
+    </section>
+
+    <section class="card">
+      <h2>Maintenance & cost control</h2>
+      <ul>
+        <li>Enable cluster autoscaler for worker pools to reduce cost during idle times.</li>
+        <li>Use preemptible/spot instances for non-critical workloads (workers).</li>
+        <li>Implement scheduled scaling for CI/test clusters.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Appendix — Useful snippets</h2>
+      <h3>Generate kubeconfig and set context</h3>
+      <pre>
+# DO (doctl)
+doctl kubernetes cluster kubeconfig save my-cluster
+
+# GKE
+gcloud container clusters get-credentials my-cluster --zone us-central1-a --project my-project
+
+# EKS
+aws eks --region us-east-1 update-kubeconfig --name my-cluster
+      </pre>
+
+      <h3>Install Helm 3 (script)</h3>
+      <pre>
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      </pre>
+
+      <h3>Verify cert-manager</h3>
+      <pre>
+kubectl -n cert-manager get pods
+kubectl -n cert-manager describe certificate my-cert
+      </pre>
+    </section>
+
+    <footer class="card">
+      <strong>Ready-to-run</strong> — adapt the provided scripts to your organization: replace domain names, emails, image registries, and secrets. For production, prefer Terraform + IAM policies + CI automation to reduce human error.
+      <p style="margin-top:12px; color:var(--muted)">Generated by ChatGPT in Max-Logic mode — coherent, deterministic, and actionable.</p>
+    </footer>
+
+  </main>
+</body>
+</html>
+

@@ -1,0 +1,45 @@
+name: CD — Helm Lint & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      kubecontext:
+        description: 'Name of kubeconfig context to use (optional)'
+        required: false
+      dry_run:
+        description: 'Helm dry-run only'
+        required: true
+        default: 'true'
+
+jobs:
+  helm-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.28.0'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.12.0
+
+      - name: Helm lint chart
+        run: |
+          helm lint ./devops/helm/aiagent || (echo "helm lint failed" && exit 1)
+
+      - name: (Optional) Deploy to cluster via kubeconfig secret
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_BASE64 }}
+        run: |
+          echo "$KUBECONFIG_CONTENT" | base64 --decode > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          helm upgrade --install aiagent ./devops/helm/aiagent -n aiagent --create-namespace --wait --timeout 10m
+

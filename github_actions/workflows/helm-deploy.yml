@@ -1,0 +1,43 @@
+name: CI/CD — Helm Deploy
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Kubeconfig
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Install helm
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Helm lint
+        run: helm lint devops/helm/aiagent
+
+      - name: Deploy via Helm
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          export KUBECONFIG="${KUBECONFIG}"
+          helm repo add bitnami https://charts.bitnami.com/bitnami || true
+          helm upgrade --install aiagent devops/helm/aiagent -n aiagent --create-namespace --wait --timeout 10m
+
+      - name: Post-deploy smoke test
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          export KUBECONFIG="${KUBECONFIG}"
+          kubectl -n aiagent rollout status deployment/aiagent-web --timeout=3m
+          kubectl -n aiagent get svc aiagent-service -o yaml
+

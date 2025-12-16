@@ -1,0 +1,21 @@
+# Patch: fix-charts.patch
+# Description: Consolidate Helm chart references from charts/aiagent to devops/helm/aiagent
+# Date: 2025-01-27
+# Status: Applied (documentation only - changes already made)
+
+# This patch documents the chart consolidation that was performed.
+# All references to charts/aiagent have been updated to devops/helm/aiagent.
+
+# Files modified (already applied):
+# - ai-agent/install.sh: chart_dir="$REPO_ROOT/devops/helm/aiagent"
+# - github_actions/deploy-helm.yml: helm lint ./devops/helm/aiagent
+# - github_actions/workflows/helm-deploy.yml: helm lint devops/helm/aiagent
+# - .github/workflows/helm-deploy.yml: helm lint devops/helm/aiagent
+
+# Archived:
+# - charts/aiagent/ → .deprecated/charts-aiagent-YYYYMMDD_HHMMSS/
+
+# Verification:
+# Run: grep -r "charts/aiagent" --include="*.sh" --include="*.yml" . | grep -v ".deprecated" | grep -v "docs/" | wc -l
+# Expected: 0
+

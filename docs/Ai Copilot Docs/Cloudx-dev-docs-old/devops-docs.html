@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI-Agent DevOps Documentation Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* ------------------ GLOBAL ------------------ */
+
+body {
+    margin: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #e8e8e8;
+    background: #0b0f17;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 600;
+}
+
+a {
+    color: #58a6ff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* ------------------ LAYOUT ------------------ */
+
+#layout {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 320px;
+    background: #111722;
+    border-right: 1px solid #1f2633;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+#content {
+    flex: 1;
+    padding: 36px;
+    overflow-y: auto;
+}
+
+/* ------------------ SIDEBAR ------------------ */
+
+.sidebar-title {
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: #93cfff;
+    font-weight: 700;
+}
+
+.section-title {
+    margin-top: 24px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #6bb6ff;
+    border-bottom: 1px solid #1f2633;
+    padding-bottom: 6px;
+}
+
+.link-list {
+    margin: 12px 0;
+    padding-left: 12px;
+}
+
+.link-list a {
+    display: block;
+    padding: 4px 0;
+    font-size: 14px;
+}
+
+/* ------------------ SEARCH ------------------ */
+
+#searchBox {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #2b3342;
+    background: #0d121c;
+    color: #e8e8e8;
+    margin-bottom: 16px;
+}
+
+.highlight {
+    background: #34425a;
+    border-radius: 4px;
+}
+
+/* ------------------ CONTENT ------------------ */
+
+.section {
+    margin-bottom: 50px;
+}
+
+.section h1 {
+    font-size: 34px;
+    margin-bottom: 16px;
+    color: #90c8ff;
+}
+
+.section h2 {
+    color: #9ec9ff;
+    margin-top: 28px;
+    font-size: 23px;
+}
+
+.section p {
+    line-height: 1.7;
+    color: #d3d3d3;
+}
+
+.code-block {
+    background: #111722;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    border: 1px solid #1f2633;
+    margin: 16px 0;
+    color: #c6e2ff;
+}
+
+</style>
+
+<script>
+// simple search highlight
+function searchDocs() {
+    const q = document.getElementById("searchBox").value.toLowerCase();
+    const content = document.getElementById("content");
+    const textNodes = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+    let node;
+    // clear previous highlights
+    document.querySelectorAll(".highlight").forEach(e => {
+        const text = document.createTextNode(e.textContent);
+        e.parentNode.replaceChild(text, e);
+    });
+
+    if (!q.trim()) return;
+    while (node = textNodes.nextNode()) {
+        const val = node.nodeValue.toLowerCase();
+        const idx = val.indexOf(q);
+        if (idx !== -1) {
+            const span = document.createElement("span");
+            const text = node.splitText(idx);
+            text.splitText(q.length);
+            span.textContent = text.nodeValue;
+            span.className = "highlight";
+            text.parentNode.replaceChild(span, text);
+        }
+    }
+}
+</script>
+
+</head>
+
+<body>
+
+<div id="layout">
+
+<!-- ------------------ SIDEBAR ------------------ -->
+
+<div id="sidebar">
+    <div class="sidebar-title">AI-Agent DevOps Docs</div>
+
+    <input id="searchBox" type="text" placeholder="Search..." onkeyup="searchDocs()">
+
+    <div class="section-title">01 — Getting Started</div>
+    <div class="link-list">
+        <a href="#intro">Introduction</a>
+        <a href="#arch">Architecture Overview</a>
+        <a href="#structure">Repository Structure</a>
+    </div>
+
+    <div class="section-title">02 — Installation</div>
+    <div class="link-list">
+        <a href="#install-local">Local Install (SystemD)</a>
+        <a href="#install-kube">Kubernetes Install (Helm)</a>
+        <a href="#oneclick">One-Click Cluster Installer</a>
+    </div>
+
+    <div class="section-title">03 — DevOps Toolchain</div>
+    <div class="link-list">
+        <a href="#ci">CI / ZIP Builder</a>
+        <a href="#helm">Helm Charts</a>
+        <a href="#provisioners">Cloud Provisioners (AWS/DO/GCP)</a>
+        <a href="#systemd">SystemD Services</a>
+        <a href="#smoke">Smoke Tests</a>
+    </div>
+
+    <div class="section-title">04 — Operations</div>
+    <div class="link-list">
+        <a href="#upgrade">Upgrades</a>
+        <a href="#uninstall">Uninstall</a>
+        <a href="#doctor">Doctor / Diagnostics</a>
+    </div>
+
+    <div class="section-title">05 — Developer Guide</div>
+    <div class="link-list">
+        <a href="#dev">Development Setup</a>
+        <a href="#frontend">Frontend Build</a>
+        <a href="#backend">Backend Build</a>
+        <a href="#patching">Patch System</a>
+    </div>
+
+</div>
+
+<!-- ------------------ CONTENT ------------------ -->
+
+<div id="content">
+
+    <!-- INTRO -->
+    <div id="intro" class="section">
+        <h1>AI-Agent DevOps Documentation</h1>
+        <p>
+            This documentation contains all operational, deployment, automation, CI, Kubernetes,
+            Helm, ZIP bundling, diagnostics, and development workflows for the AI-Agent V1 system.
+            It is generated with Max-Logic methodology:
+        </p>
+
+        <ul>
+            <li>Input → Parse context</li>
+            <li>Cross-reference → Verified structures</li>
+            <li>Infer → Missing relations</li>
+            <li>Test → Contradictions</li>
+            <li>Reconstruct → Clear explanation</li>
+            <li>Validate → Coherent</li>
+            <li>Output → Truth-leaning, complete</li>
+        </ul>
+
+        <p>
+            All sections in this page reference separate HTML files (which will be generated one by one).
+        </p>
+    </div>
+
+    <!-- ARCHITECTURE -->
+    <div id="arch" class="section">
+        <h1>Architecture Overview</h1>
+        <p>The system consists of:</p>
+
+        <ul>
+            <li>Web Dashboard (Gunicorn + Flask)</li>
+            <li>Worker (RQ + Redis)</li>
+            <li>Helm Charts (aiagent, aiagent-web, aiagent-worker)</li>
+            <li>SystemD services</li>
+            <li>CI/CD pipelines</li>
+            <li>Cloud provisioners</li>
+            <li>ZIP builder + patching system</li>
+        </ul>
+    </div>
+
+    <!-- STRUCTURE -->
+    <div id="structure" class="section">
+        <h1>Repository Structure</h1>
+        <p>A fully mapped tree of major components (based on real repo scan):</p>
+        <div class="code-block">
+aiagent/
+├── ai/
+├── dashboard/
+├── deploy/
+├── devops/
+│   ├── helm/
+│   ├── patches/
+│   ├── smoke_tests/
+│   ├── systemd/
+│   └── tools/
+├── charts/
+│   └── aiagent/
+└── cloud-provisioners/
+        </div>
+    </div>
+
+    <!-- LOCAL INSTALL -->
+    <div id="install-local" class="section">
+        <h1>Local Installation (SystemD)</h1>
+        <p>Handled by:</p>
+        <ul>
+            <li><strong>installer_master.sh</strong></li>
+            <li><strong>installer.sh</strong></li>
+            <li><strong>aiagent_full_power_installer.sh</strong></li>
+        </ul>
+        <p>All installers support auto-repair, venv creation, smoke tests, systemd setup.</p>
+    </div>
+
+    <!-- KUBERNETES -->
+    <div id="install-kube" class="section">
+        <h1>Kubernetes Installation (Helm)</h1>
+        <p>Uses the aiagent Helm chart suite:</p>
+        <ul>
+            <li>aiagent (main chart)</li>
+            <li>aiagent-worker</li>
+            <li>aiagent-web</li>
+        </ul>
+
+        <p>Installer: <code>installer_master.sh --kube-deploy</code></p>
+    </div>
+
+    <!-- ONECLICK -->
+    <div id="oneclick" class="section">
+        <h1>One-Click Cluster Installer</h1>
+        <p>This script provisions a Kubernetes cluster with:</p>
+        <ul>
+            <li>Ingress-NGINX</li>
+            <li>Cert-Manager</li>
+            <li>Redis</li>
+            <li>AI-Agent Helm deployment</li>
+        </ul>
+
+        <p>Script location: <code>oneclick_cluster_install.sh</code></p>
+    </div>
+
+    <!-- CI -->
+    <div id="ci" class="section">
+        <h1>CI Pipeline (GitHub Actions)</h1>
+        <p>Supports:</p>
+        <ul>
+            <li>Build ZIP Release</li>
+            <li>Run smoke tests (imports, HTTP check)</li>
+            <li>Build + push Docker images</li>
+            <li>Helm deploy pipeline</li>
+        </ul>
+    </div>
+
+    <!-- HELM -->
+    <div id="helm" class="section">
+        <h1>Helm Charts</h1>
+        <p>Located in:</p>
+        <div class="code-block">/devops/helm/</div>
+
+        <p>Includes:</p>
+        <ul>
+            <li>Redis</li>
+            <li>Certificate + Issuer</li>
+            <li>Ingress</li>
+            <li>Web Deployment</li>
+            <li>Worker Deployment</li>
+        </ul>
+    </div>
+
+    <!-- PROVISIONERS -->
+    <div id="provisioners" class="section">
+        <h1>Cloud Provisioners</h1>
+        <p>Three full cluster automation scripts:</p>
+
+        <ul>
+            <li>AWS → <code>cloud-provisioners/aws_create_cluster.sh</code></li>
+            <li>DigitalOcean → <code>cloud-provisioners/do_create_cluster.sh</code></li>
+            <li>GCP → <code>cloud-provisioners/gcp_create_cluster.sh</code></li>
+        </ul>
+    </div>
+
+    <!-- SYSTEMD -->
+    <div id="systemd" class="section">
+        <h1>SystemD Services</h1>
+        <p>Installed by installer.sh and aiagent_full_power_installer.sh</p>
+        <div class="code-block">
+/devops/systemd/aiagent.service
+        </div>
+    </div>
+
+    <!-- SMOKE -->
+    <div id="smoke" class="section">
+        <h1>Smoke Tests</h1>
+        <p>Scripts:</p>
+        <div class="code-block">
+devops/smoke_tests/check_http.sh
+devops/smoke_tests/check_imports.sh
+devops/smoke_tests/ci_wrapper.sh
+        </div>
+    </div>
+
+    <!-- UPGRADE -->
+    <div id="upgrade" class="section">
+        <h1>Upgrade Path</h1>
+        <p>
+            Upgrades are handled by <code>upgrade.sh</code>:
+            performs backup → stop → patch → verify → restart.
+        </p>
+    </div>
+
+    <!-- UNINSTALL -->
+    <div id="uninstall" class="section">
+        <h1>Uninstall</h1>
+        <p>Performed by <code>uninstall.sh</code>:</p>
+        <ul>
+            <li>Stops services</li>
+            <li>Deletes systemd units</li>
+            <li>Removes /opt/aiagent</li>
+            <li>Optional: remove Redis, logs, certs</li>
+        </ul>
+    </div>
+
+    <!-- DOCTOR -->
+    <div id="doctor" class="section">
+        <h1>Doctor / Diagnostics</h1>
+        <p>
+            Performed by <code>doctor.sh</code>:
+        </p>
+        <ul>
+            <li>System service health</li>
+            <li>Port checks</li>
+            <li>Redis health</li>
+            <li>Kubernetes health</li>
+            <li>Installer self-test</li>
+        </ul>
+    </div>
+
+    <!-- DEV -->
+    <div id="dev" class="section">
+        <h1>Developer Setup</h1>
+        <p>Explains how to run backend, frontend, tests, patching, mock mode.</p>
+    </div>
+
+    <!-- FRONTEND -->
+    <div id="frontend" class="section">
+        <h1>Frontend Build</h1>
+        <p>
+            Located under <code>/frontend</code>, built using:
+            <ul>
+                <li>Vite</li>
+                <li>React</li>
+                <li>Tailwind</li>
+            </ul>
+        </p>
+        <div class="code-block">
+npm install
+npm run build
+        </div>
+    </div>
+
+    <!-- BACKEND -->
+    <div id="backend" class="section">
+        <h1>Backend Build</h1>
+        <p>Python 3.11 + Venv</p>
+        <div class="code-block">
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+        </div>
+    </div>
+
+    <!-- PATCHING -->
+    <div id="patching" class="section">
+        <h1>Patching System</h1>
+        <p>Handled by:</p>
+        <ul>
+            <li><code>insert_modules.source.patch</code></li>
+            <li><code>aiagent_release.patch</code></li>
+            <li><code>apply_patch.sh</code></li>
+        </ul>
+        <p>
+            Supports safe git-apply, 3-way merge, stat browsing, automated backups.
+        </p>
+    </div>
+
+</div>
+</div>
+
+</body>
+</html>
+

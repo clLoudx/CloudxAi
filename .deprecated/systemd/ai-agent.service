@@ -1,0 +1,15 @@
+[Unit]
+Description=AI Agent Web Service
+After=network.target
+
+[Service]
+User=aiagent
+Group=aiagent
+EnvironmentFile=/etc/ai-agent/env
+WorkingDirectory=/opt/ai-agent/dashboard
+ExecStart=/opt/ai-agent/venv/bin/gunicorn -k eventlet -w 1 -b 127.0.0.1:8099 app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

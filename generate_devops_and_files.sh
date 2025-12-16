@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+# generate_devops_and_files.sh
+# Generate devops/ tree: Helm chart, k8s manifests, GitHub Actions, cert-manager sample, docker-compose healthcheck.
+set -euo pipefail
+
+SELF="$(realpath "$0")"
+ROOT_DIR="$(dirname "$SELF")"
+DEVOPS_DIR="${ROOT_DIR}/devops"
+TOOLS_DIR="${DEVOPS_DIR}/tools"
+HELM_DIR="${DEVOPS_DIR}/helm/aiagent"
+CHART_TPL="${HELM_DIR}/templates"
+GHA_DIR="${ROOT_DIR}/.github/workflows"
+LOG="${DEVOPS_DIR}/generate.log"
+mkdir -p "$DEVOPS_DIR" "$TOOLS_DIR" "$HELM_DIR" "$CHART_TPL" "$GHA_DIR"
+echo "Generating devops artifacts into $DEVOPS_DIR" > "$LOG"
+
+# Basic Chart.yaml
+cat > "$HELM_DIR/Chart.yaml" <<EOF
+apiVersion: v2
+name: aiagent
+description: AI Agent Helm chart
+type: application
+version: 0.1.0
+appVersion: "1.0"
+EOF
+
+# values.yaml
+cat > "$HELM_DIR/values.yaml" <<'EOF'
+replicaCount: 1
+
+image:
+  repository: aiagent_web
+  tag: latest
+  pullPolicy: IfNotPresent
+
+worker:
+  image: aiagent_worker:latest
+  replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  host: aiagent.local
+  tls: false
+
+resources: {}
+EOF
+
+# deployment template (web)
+cat > "${CHART_TPL}/deployment.yaml" <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aiagent.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "aiagent.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "aiagent.name" . }}
+    spec:
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+EOF
+
+# service
+cat > "${CHART_TPL}/service.yaml" <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aiagent.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 8000
+  selector:
+    app: {{ include "aiagent.name" . }}
+EOF
+
+# ingress (optional)
+cat > "${CHART_TPL}/ingress.yaml" <<'EOF'
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aiagent.fullname" . }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+{{- if .Values.ingress.tls }}
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+{{- end }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "aiagent.fullname" . }}
+                port:
+                  number: 8000
+{{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: aiagent-tls
+{{- end }}
+{{- end }}
+EOF
+
+# _helpers.tpl
+cat > "${HELM_DIR}/templates/_helpers.tpl" <<'EOF'
+{{- define "aiagent.name" -}}
+aiagent
+{{- end -}}
+{{- define "aiagent.fullname" -}}
+{{- printf "%s" (include "aiagent.name" .) -}}
+{{- end -}}
+EOF
+
+# GitHub Actions for Helm deploy
+cat > "${GHA_DIR}/k8s-helm-deploy.yml" <<'EOF'
+name: k8s Helm Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+      - name: Helm upgrade --install
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 -d > kubeconfig
+          export KUBECONFIG="$PWD/kubeconfig"
+          helm upgrade --install aiagent devops/helm/aiagent --namespace aiagent --create-namespace --wait
+EOF
+
+# cert-manager + letsencrypt sample (Ingress + ClusterIssuer)
+cat > "${DEVOPS_DIR}/cert-manager-letsencrypt.yaml" <<'EOF'
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: your-email@example.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+EOF
+
+# docker-compose healthcheck skeleton (devops/tools)
+cat > "${TOOLS_DIR}/docker-compose-health.yml" <<'EOF'
+version: "3.8"
+services:
+  web:
+    image: aiagent_web:latest
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+EOF
+
+# add a simple README
+cat > "${DEVOPS_DIR}/README.md" <<'EOF'
+Devops files generated by generate_devops_and_files.sh
+- helm/aiagent: Helm chart templates
+- tools/docker-compose-health.yml: sample docker-compose health config
+- cert-manager-letsencrypt.yaml: sample ClusterIssuer (edit email)
+- .github/workflows/k8s-helm-deploy.yml: example GitHub Actions pipeline
+EOF
+
+echo "Generated devops artifacts under $DEVOPS_DIR" >> "$LOG"
+echo "OK: devops generated"
+

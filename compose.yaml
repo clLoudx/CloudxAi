@@ -1,0 +1,6 @@
+services:
+  aicloudxagent:
+    image: aicloudxagent
+    build:
+      context: .
+      dockerfile: ./Dockerfile

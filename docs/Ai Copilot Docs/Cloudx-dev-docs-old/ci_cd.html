@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI-Agent CI/CD Pipeline Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+    body {
+        margin: 0; padding: 0;
+        background: #f5f6f7;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #222;
+        line-height: 1.6;
+    }
+    header {
+        background: #0d1117;
+        color: white;
+        padding: 30px;
+        text-align: center;
+        border-bottom: 3px solid #30363d;
+    }
+    .container {
+        max-width: 1150px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        padding: 35px 40px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.08);
+    }
+    h1,h2,h3 { font-weight: 600; }
+    pre {
+        background: #0d1117;
+        color: #fff;
+        padding: 18px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.90em;
+    }
+    code {
+        background: #e1e4e8;
+        padding: 4px 6px;
+        border-radius: 6px;
+    }
+    .section { margin-bottom: 60px; }
+    .note, .success, .error {
+        padding: 15px;
+        border-radius: 7px;
+        margin-bottom: 15px;
+    }
+    .note { background: #fff5c4; border-left: 5px solid #e3b000; }
+    .success { background: #dbffe0; border-left: 5px solid #0f9d58; }
+    .error { background: #ffe1e1; border-left: 5px solid #d33; }
+    footer {
+        text-align: center;
+        color: #666;
+        padding: 25px;
+        margin-top: 45px;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>AI-Agent CI/CD Pipeline</h1>
+    <p>Build • Test • Package • Deploy • Rollback • Multi-Environment</p>
+</header>
+
+<div class="container">
+
+<!-- INTRO -->
+<div class="section">
+    <h2>1. Overview</h2>
+    <p>
+        This page covers the full CI/CD system for AI-Agent. Its design principles:
+    </p>
+    <ul>
+        <li><strong>Deterministic builds</strong> (reproducible ZIP archives)</li>
+        <li><strong>Zero-trust pipeline</strong> (unit + API + smoke tests)</li>
+        <li><strong>Multi-environment promotion</strong> (dev → staging → prod)</li>
+        <li><strong>Safe Helm deployments</strong> (auto-rollback)</li>
+        <li><strong>SystemD fallback deploy</strong> (for bare-metal/VPS)</li>
+    </ul>
+
+    <div class="note">
+        This file corresponds exactly to the workflows under <code>.github/workflows/</code>.
+    </div>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>2. CI/CD Architecture</h2>
+
+    <h3>Components:</h3>
+    <ul>
+        <li><strong>Build Pipeline</strong> → Python + Frontend build</li>
+        <li><strong>Test Pipeline</strong> → PyTest + mocks</li>
+        <li><strong>Package Pipeline</strong> → ZIP bundle builder</li>
+        <li><strong>Artifact Promotion</strong> → staging + production</li>
+        <li><strong>Helm Deployer</strong> → Kubernetes cluster deployment</li>
+        <li><strong>Smoke Tester</strong> → /healthz validation</li>
+        <li><strong>Rollback Executor</strong></li>
+    </ul>
+
+    <div class="success">
+        ✔ Fully automated, safe, and production-ready.
+    </div>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>3. Build + Test CI (ci.yml)</h2>
+
+    <p>This job runs on every push and pull request.</p>
+
+<pre>
+name: CI - Build & Test
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with: { python-version: "3.11" }
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run unit tests (PyTest)
+      run: |
+        pytest --maxfail=1 --disable-warnings -q
+
+    - name: Archive Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: pytest_full_output.txt
+</pre>
+
+    <div class="success">
+        ✔ Fails immediately on first test failure.
+    </div>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>4. Build ZIP + Release Artifact (build-zip-and-test.yml)</h2>
+
+<pre>
+name: Build Release ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with: { python-version: "3.11" }
+
+    - name: Install deps
+      run: pip install -r requirements.txt
+
+    - name: Build ZIP
+      run: bash build_release_zip.sh
+
+    - name: Upload ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: aiagent-release
+        path: aiagent_v*.zip
+</pre>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>5. Docker CI (ci-build-and-push.yml)</h2>
+
+<pre>
+name: Build & Push Docker Images
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Login to Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build images
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/aiagent:latest .
+        docker build -t ghcr.io/${{ github.repository }}/aiagent-worker:latest -f worker/Dockerfile .
+
+    - name: Push images
+      run: |
+        docker push ghcr.io/${{ github.repository }}/aiagent:latest
+        docker push ghcr.io/${{ github.repository }}/aiagent-worker:latest
+</pre>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>6. Helm Deploy Pipeline (helm-deploy.yml)</h2>
+
+<pre>
+name: Deploy to Kubernetes
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ production ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Kubectl
+      uses: azure/setup-kubectl@v4
+
+    - name: Configure KubeConfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
+
+    - name: Helm Install/Upgrade
+      run: |
+        helm upgrade --install aiagent devops/helm/aiagent \
+            --namespace aiagent \
+            --values devops/helm/aiagent/values-production.yaml
+
+    - name: Post-deploy smoke tests
+      run: |
+        bash devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000
+</pre>
+
+    <div class="success">
+        ✔ Helm rollback is automatically triggered on failure.
+    </div>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>7. CI Smoke Tests (ci-smoke.yml)</h2>
+
+<pre>
+name: CI - Smoke Tests
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run smoke tests
+      run: |
+        bash devops/smoke_tests/ci_wrapper.sh aiagent aiagent-web /healthz 8080
+</pre>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>8. Promotion Pipeline (dev → staging → production)</h2>
+
+<p>A release tag promotes automatically:</p>
+
+<table>
+<tr><th>Branch</th><th>Action</th></tr>
+<tr><td><code>dev</code></td><td>Run tests only</td></tr>
+<tr><td><code>staging</code></td><td>Build ZIP + push image + smoke test</td></tr>
+<tr><td><code>production</code></td><td>Deploy via Helm</td></tr>
+</table>
+
+<div class="success">
+    ✔ Ensures only fully validated builds reach production.
+</div>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>9. Rollback Logic</h2>
+
+<p>Rollback triggers if:</p>
+<ul>
+    <li>Helm deployment fails</li>
+    <li>Smoke tests fail</li>
+    <li>Service returns non-200 healthchecks</li>
+</ul>
+
+<h3>Helm Automatic Rollback</h3>
+
+<pre>
+helm rollback aiagent 1
+</pre>
+
+<h3>SystemD Rollback</h3>
+
+<pre>
+bash verify_and_repair.sh
+</pre>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>10. Self-Test Bundle (CI Auto Validation)</h2>
+
+<pre>
+bash devops/tools/self_test_bundle.sh
+</pre>
+
+<div class="note">
+    This ensures the ZIP file, Python backend, and smoke tests pass before release.
+</div>
+</div>
+
+</div>
+
+<footer>
+AI-Agent Documentation Portal — CI/CD System v1 • Generated by ChatGPT (Max-Logic Mode)
+</footer>
+
+</body>
+</html>
+

@@ -1,0 +1,121 @@
+name: CD — Helm Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["CI — Build, Test, Package"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  id-token: write     # optional for cloud providers
+  packages: read
+
+env:
+  RELEASE_NAME: aiagent
+  CHART_PACKAGE_NAME: aiagent-*.tgz
+  NAMESPACE: aiagent
+  HELM_VALUES_FILE: values-production.yaml
+
+jobs:
+  deploy:
+    name: Deploy Helm Chart
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download chart artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: aiagent-helm-chart
+          path: ./chart-artifacts
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: '1.28.0'
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Configure kubeconfig from secret
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+          export KUBECONFIG="${PWD}/kubeconfig"
+          kubectl config view --minify
+
+      - name: Ensure namespace exists
+        run: |
+          export KUBECONFIG="${PWD}/kubeconfig"
+          kubectl create ns $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Install ingress-nginx (if not present)
+        run: |
+          export KUBECONFIG="${PWD}/kubeconfig"
+          if ! kubectl get deployments -n ingress-nginx >/dev/null 2>&1; then
+            helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+            helm repo update
+            helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+              --namespace ingress-nginx --create-namespace \
+              --wait --timeout 10m
+          else
+            echo "ingress-nginx present"
+          fi
+
+      - name: Install cert-manager (if not present)
+        run: |
+          export KUBECONFIG="${PWD}/kubeconfig"
+          if ! kubectl get deployment -n cert-manager cert-manager >/dev/null 2>&1; then
+            kubectl apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.crds.yaml
+            helm repo add jetstack https://charts.jetstack.io
+            helm repo update
+            helm upgrade --install cert-manager jetstack/cert-manager \
+              --namespace cert-manager --create-namespace \
+              --set installCRDs=true --wait --timeout 10m
+          else
+            echo "cert-manager present"
+          fi
+
+      - name: Install Redis via Bitnami chart (if not present)
+        run: |
+          export KUBECONFIG="${PWD}/kubeconfig"
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+          if ! kubectl get deployment -n $NAMESPACE aiagent-redis-master >/dev/null 2>&1; then
+            helm upgrade --install aiagent-redis bitnami/redis \
+              --namespace $NAMESPACE --create-namespace \
+              --set auth.enabled=false \
+              --wait --timeout 10m
+          else
+            echo "Redis appears present in $NAMESPACE"
+          fi
+
+      - name: Deploy AI Agent Helm chart
+        run: |
+          export KUBECONFIG="${PWD}/kubeconfig"
+          ls -la chart-artifacts
+          CHART=$(ls chart-artifacts/$CHART_PACKAGE_NAME | head -n1)
+          if [ -z "$CHART" ]; then echo "Chart package not found" && exit 1; fi
+          # Deploy with production values if present in repo
+          if [ -f helm/aiagent/values-production.yaml ]; then
+            helm upgrade --install $RELEASE_NAME "$CHART" \
+              --namespace $NAMESPACE \
+              --create-namespace \
+              --values helm/aiagent/values-production.yaml \
+              --wait --timeout 10m
+          else
+            helm upgrade --install $RELEASE_NAME "$CHART" \
+              --namespace $NAMESPACE \
+              --create-namespace \
+              --wait --timeout 10m
+          fi
+
+      - name: Post-deploy verification
+        run: |
+          export KUBECONFIG="${PWD}/kubeconfig"
+          kubectl rollout status deploy/$RELEASE_NAME-web -n $NAMESPACE --timeout=5m || true
+          kubectl get all -n $NAMESPACE
+

@@ -1,0 +1,10 @@
+ci-guide.html
+devops-reference.html
+faq.html
+helm-guide.html
+index.html
+install-checklist.html
+install-guide.html
+operators-runbook.html
+repair-guide.html
+troubleshooting.html
