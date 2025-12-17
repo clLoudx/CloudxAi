@@ -112,8 +112,76 @@ After PHASE 5, recommended next steps:
 
 If you'd like, I can also:
 
-- Add a sample `prometheus_scrape.yml` for K8s or docker-compose.
-
 - Add a short `CONTRIBUTING.md` note for maintainers describing how to safely extend the monitoring event handlers.
 
-Approve this doc and I'll prepare an atomic commit message and create the PR-ready change set if you want the changes staged/committed.
+- Approve this doc and I'll prepare an atomic commit message and create the PR-ready change set if you want the changes staged/committed.
+
+---
+
+## Appendix A — Prometheus scrape examples
+
+Two minimal examples are provided below to help operators scrape the FastAPI `/metrics` endpoint exposed by the controller app. Adjust `job_name`, `namespace`, `relabel_configs`, and `static_configs` as appropriate for your environment.
+
+### Kubernetes (Service scrape)
+
+If your app is exposed via a `Service` in Kubernetes, a simple `ServiceMonitor` (Prometheus Operator) or a direct scrape config can be used. Example Prometheus scrape config targeting a service named `aicloudxagent` in the `default` namespace:
+
+```yaml
+- job_name: 'aicloudxagent'
+    kubernetes_sd_configs:
+        - role: endpoints
+    relabel_configs:
+        - source_labels: [__meta_kubernetes_service_name]
+            regex: aicloudxagent
+            action: keep
+        - source_labels: [__meta_kubernetes_namespace]
+            regex: default
+            action: keep
+    metrics_path: /metrics
+    scheme: http
+    # If your service listens on a port named "http"/"metrics", prometheus will auto-discover it.
+    # static_configs may be used for simple single-node setups.
+```
+
+If you use the Prometheus Operator, a `ServiceMonitor` would look like:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+    name: aicloudxagent-servicemonitor
+    labels:
+        release: prometheus
+spec:
+    selector:
+        matchLabels:
+            app: aicloudxagent
+    namespaceSelector:
+        matchNames:
+            - default
+    endpoints:
+        - port: http
+            path: /metrics
+            interval: 30s
+```
+
+### Docker Compose (static scrape)
+
+For a local docker-compose setup where the app is reachable at `http://localhost:8000/metrics`, add a `static_configs` block:
+
+```yaml
+- job_name: 'aicloudxagent-local'
+    metrics_path: /metrics
+    static_configs:
+        - targets: ['host.docker.internal:8000'] # or ['localhost:8000'] depending on your platform
+```
+
+Notes:
+
+- The FastAPI app exposes `/metrics` by default at the server port you run it on (e.g., 8000). Ensure your ingress/service/port mapping makes that endpoint reachable to Prometheus.
+- If your deployment uses TLS/HTTPS, set `scheme: https` and configure TLS settings or use a sidecar that exposes plaintext metrics to Prometheus.
+- For containerized deployments, prefer scraping via a Kubernetes `Service` + `ServiceMonitor` (if using Prometheus Operator) instead of host-level ports.
+
+---
+
+
