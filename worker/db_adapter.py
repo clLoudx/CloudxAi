@@ -59,7 +59,11 @@ def claim_job(dsn: Optional[str], *args, **kwargs):
         if db_postgres is None:
             from . import db_postgres as _db_postgres
             db_postgres = _db_postgres
+        # Optionally use advisory locks when configured via env var
+        use_advisory = os.environ.get("USE_ADVISORY_LOCKS", "0") in ("1", "true", "True")
         with get_conn(dsn) as conn:
+            if use_advisory and hasattr(db_postgres, 'claim_job_with_advisory'):
+                return db_postgres.claim_job_with_advisory(conn, *args, **kwargs)
             return db_postgres.claim_job(conn, *args, **kwargs)
     else:
         with get_conn(dsn) as conn:

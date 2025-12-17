@@ -56,6 +56,40 @@ def claim_job(conn, worker_id: str, lease_seconds: int = 30) -> Optional[Dict[st
     return dict(row)
 
 
+def claim_job_with_advisory(conn, worker_id: str, lease_seconds: int = 30) -> Optional[Dict[str, Any]]:
+    """Claim a job using pg_try_advisory_lock to avoid high contention on UPDATE.
+
+    This will attempt to atomically pick a candidate job and acquire a session
+    advisory lock on the job id. If the advisory lock cannot be acquired the
+    UPDATE will not return rows and the function returns None.
+    """
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    # Use pg_try_advisory_lock(id) in the WHERE clause so the row is only
+    # updated when the lock is successfully acquired in this session.
+    cur.execute(
+        """
+        UPDATE jobs
+        SET status='running', locked_at = now(), locked_by = %s, updated_at = now()
+        WHERE id = (
+            SELECT id FROM jobs
+            WHERE (status = 'queued') OR (status = 'running' AND locked_at < now() - make_interval(secs => %s))
+            ORDER BY created_at
+            FOR UPDATE SKIP LOCKED
+            LIMIT 1
+        )
+        AND pg_try_advisory_lock(id)
+        RETURNING *
+        """,
+        (worker_id, lease_seconds),
+    )
+    row = cur.fetchone()
+    if not row:
+        conn.rollback()
+        return None
+    conn.commit()
+    return dict(row)
+
+
 def complete_job(conn, job_id: int) -> None:
     cur = conn.cursor()
     cur.execute("UPDATE jobs SET status='completed', updated_at = now() WHERE id = %s", (job_id,))
