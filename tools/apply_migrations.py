@@ -38,13 +38,28 @@ def main():
     conn = psycopg2.connect(DSN)
     try:
         cur = conn.cursor()
-        for path in migration_files:
-            print(f"Applying {path}...")
-            with open(path, "r", encoding="utf-8") as fh:
-                sql = fh.read()
-            cur.execute(sql)
-        conn.commit()
-        print("Migrations applied.")
+            # Ensure schema_migrations table exists
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                filename TEXT PRIMARY KEY,
+                applied_at TIMESTAMPTZ DEFAULT now()
+            )
+            """)
+            conn.commit()
+            for path in migration_files:
+                fname = os.path.basename(path)
+                # Check if migration already applied
+                cur.execute("SELECT 1 FROM schema_migrations WHERE filename = %s", (fname,))
+                if cur.fetchone():
+                    print(f"Skipping already applied migration: {fname}")
+                    continue
+                print(f"Applying {path}...")
+                with open(path, "r", encoding="utf-8") as fh:
+                    sql = fh.read()
+                cur.execute(sql)
+                cur.execute("INSERT INTO schema_migrations (filename) VALUES (%s)", (fname,))
+                conn.commit()
+            print("Migrations applied.")
     finally:
         conn.close()
 
