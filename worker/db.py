@@ -18,7 +18,7 @@ DEFAULT_DB = "file:phase6_poc.db?mode=memory&cache=shared"
 @contextmanager
 def get_conn(db_url: Optional[str] = None):
     url = db_url or DEFAULT_DB
-    # sqlite in-memory shared cache mode
+    # sqlite in-memory shared cache mode by default; callers can pass a file path
     conn = sqlite3.connect(url, uri=True, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     try:
