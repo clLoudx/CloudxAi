@@ -12,7 +12,10 @@ from typing import Optional
 from datetime import datetime
 from prometheus_client import Counter, Gauge
 
-from .db import get_conn, init_db, claim_job, complete_job, fail_job, enqueue_job
+import os
+
+from .db import init_db
+from .db_adapter import get_conn, claim_job, complete_job, fail_job, enqueue_job
 from .runner import run_job
 
 # Simple metrics registered on import (tests here run in process)
@@ -31,25 +34,28 @@ class Worker:
         self._stop = threading.Event()
 
     def start(self, loop_delay: float = 0.1):
-        with get_conn(self.db_url) as conn:
-            init_db(conn)
-        while not self._stop.is_set():
+        # If using sqlite (default), ensure schema exists. For Postgres, migrations should be applied externally.
+        if not (self.db_url and (self.db_url.startswith('postgres://') or self.db_url.startswith('postgresql://') or 'postgres' in (self.db_url or '').lower())):
             with get_conn(self.db_url) as conn:
-                job = claim_job(conn, self.worker_id, lease_seconds=self.lease_seconds)
-                if not job:
-                    time.sleep(loop_delay)
-                    continue
-                TASK_RUNNING.inc()
-                try:
-                    # run job
-                    run_job(job)
-                    complete_job(conn, job['id'])
-                    TASK_COMPLETED.inc()
-                except Exception:
-                    fail_job(conn, job['id'])
-                    TASK_FAILED.inc()
-                finally:
-                    TASK_RUNNING.dec()
+                init_db(conn)
+
+        while not self._stop.is_set():
+            # claim_job is implemented in db_adapter and will open/close connections as needed
+            job = claim_job(self.db_url, self.worker_id, lease_seconds=self.lease_seconds)
+            if not job:
+                time.sleep(loop_delay)
+                continue
+            TASK_RUNNING.inc()
+            try:
+                # run job
+                run_job(job)
+                complete_job(self.db_url, job['id'])
+                TASK_COMPLETED.inc()
+            except Exception:
+                fail_job(self.db_url, job['id'])
+                TASK_FAILED.inc()
+            finally:
+                TASK_RUNNING.dec()
 
     def stop(self):
         self._stop.set()
