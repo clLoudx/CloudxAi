@@ -1,0 +1,98 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+.eggs/
+venv/
+.venv/
+build/
+dist/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+
+# Distribution / packaging
+.Python
+env/
+ENV/
+
+# Database
+*.sqlite
+*.db
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Archives
+*.tar.gz
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+.eggs/
+venv/
+.venv/
+build/
+dist/
+
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+
+# Distribution / packaging
+.Python
+env/
+ENV/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Archives
+*.tar.gz
+*.zip
+
+# Node
+node_modules/
+
+# Secrets and credentials
+.env
+.env.*
+
+# Avoid committing large binaries
+*.bin
+
+# Keep generated docs out
+docs/_build/
+
+# Local environment markers
+.reverse-env/
+.phase-env/
+
