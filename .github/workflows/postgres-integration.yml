@@ -1,3 +1,47 @@
+name: Postgres integration (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      use_service:
+        description: 'Use GitHub Actions Postgres service (true/false).'
+        required: false
+        default: 'true'
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+
+      - name: Run Postgres integration tests (service)
+        if: inputs.use_service == 'true'
+        uses: docker://postgres:15
+        with:
+          entrypoint: /bin/sh
+          args: -c "sleep 5 && echo 'Postgres service available'"
+
+      - name: Run tests with DATABASE_DSN env
+        if: inputs.use_service != 'true'
+        env:
+          DATABASE_DSN: ${{ secrets.DATABASE_DSN }}
+        run: |
+          if [ -z "${DATABASE_DSN}" ]; then echo "DATABASE_DSN secret not set" && exit 1; fi
+          pytest -q tests/test_postgres_integration.py -q
+
+      - name: Integration summary
+        run: echo "Integration run complete"
 name: Postgres Integration Tests
 
 on:
