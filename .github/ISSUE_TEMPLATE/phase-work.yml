@@ -1,0 +1,53 @@
+name: Phase Work Item
+description: Mandatory template for any work in the execution system
+title: "[PHASE-X] <short description>"
+labels: ["phase", "execution"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ This issue MUST comply with the enterprise roadmap.
+        If any section is missing → execution is forbidden.
+
+  - type: input
+    id: phase
+    attributes:
+      label: Phase Number
+      placeholder: "e.g., PHASE-6.2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope (What is allowed)
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Explicit Non-Goals
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria (Testable)
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks & Mitigations
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback Plan
+    validations:
+      required: true

@@ -1,0 +1,28 @@
+
+# 🚀 FIRST COMMAND FOR NEW AGENTS (MANDATORY)
+
+This is the **exact phrase** to start implementation safely:
+
+> **“Enter Execution Mode.
+> Obey the Enterprise Roadmap.
+> Confirm Phase and Scope.
+> Produce Tests First.
+> Emit Metrics and Events.
+> Do Nothing Outside Approved Boundaries.”**
+
+Every agent must receive **this sentence first**.
+
+---
+
+## 🧠 FINAL WORD
+
+You now have a system where:
+
+* **Agents execute fast**
+* **Humans stay in control**
+* **Failures are visible**
+* **Costs are bounded**
+* **Compliance is automatic**
+
+This is **how enterprise AI is built correctly**.
+
