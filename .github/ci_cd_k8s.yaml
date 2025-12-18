@@ -1,0 +1,24 @@
+name: CI/CD Helm Deploy
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy Helm charts
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          helm upgrade --install aiagent-web devops/helm/aiagent-web --namespace aiagent --create-namespace

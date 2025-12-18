@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Agent — DevOps & Installer Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1220; --panel:#071022; --muted:#94a3b8; --accent:#06b6d4;
+    --card:#0f1724; --glass: rgba(255,255,255,0.03);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071021 0%,#0b1220 100%);color:#e6eef6}
+  .wrap { max-width:1100px;margin:28px auto;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; box-shadow:0 8px 30px rgba(2,6,23,0.6); }
+  header { display:flex; align-items:center; gap:16px; margin-bottom:18px;}
+  header h1{margin:0;font-size:20px;font-weight:800}
+  header p{margin:0;color:var(--muted)}
+  nav.toc { display:flex; gap:12px; flex-wrap:wrap; margin:12px 0 20px 0; }
+  nav.toc a { color:var(--accent); text-decoration:none; font-size:13px; background:rgba(255,255,255,0.02); padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.02) }
+  section { margin:18px 0; padding:18px; background:var(--card); border-radius:10px; border:1px solid rgba(255,255,255,0.02) }
+  h2 { margin:0 0 8px 0; font-size:18px; color:#cfeffd; }
+  h3 { margin:8px 0; font-size:15px; color:#eaf6fb; }
+  pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; background: rgba(0,0,0,0.25); color:#e6eef6; padding:8px; border-radius:6px; overflow:auto }
+  pre { padding:12px; font-size:13px; line-height:1.45 }
+  .kbd { background:#071021; padding:4px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.03); color:var(--muted); font-size:13px }
+  table { width:100%; border-collapse:collapse; margin-top:8px }
+  th,td { text-align:left; padding:8px; border-bottom:1px dashed rgba(255,255,255,0.03); font-size:13px; color:var(--muted) }
+  .muted { color:var(--muted) }
+  .box { background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.02) }
+  .badge { display:inline-block; padding:6px 8px; border-radius:999px; background:rgba(255,255,255,0.03); color:var(--muted); font-size:12px; border:1px solid rgba(255,255,255,0.02) }
+  .diagram { font-family: monospace; white-space:pre; background:transparent; color:#cfeffd; padding:10px; border-radius:6px; border:1px dashed rgba(255,255,255,0.03) }
+  .toc-col { display:flex; gap:8px; flex-wrap:wrap; }
+  footer { margin-top:22px; font-size:13px; color:var(--muted) }
+  .cmd { color:#b7f8ff }
+  a.inline { color:var(--accent); text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#3b82f6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#041428">
+      AI
+    </div>
+    <div>
+      <h1>AI Agent — DevOps & Installer Documentation</h1>
+      <p class="muted">Complete developer & operator guide — install modes, Helm charts, CI/CD, troubleshooting, and dev workflow.</p>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-col">
+      <a href="#intro">Introduction</a>
+      <a href="#repo-structure">Repo Structure</a>
+      <a href="#install-modes">Install Modes</a>
+      <a href="#oneclick">One-Click Cluster</a>
+      <a href="#cloud-provisioners">Cloud Provisioners</a>
+      <a href="#devops-tools">DevOps Tools</a>
+      <a href="#cicd">CI/CD</a>
+      <a href="#production">Production Deploy</a>
+      <a href="#upgrade-repair">Upgrade & Repair</a>
+      <a href="#uninstall">Uninstall</a>
+      <a href="#developer">Developer Workflow</a>
+      <a href="#security">Security</a>
+      <a href="#troubleshooting">Troubleshooting</a>
+      <a href="#appendix">Appendix</a>
+    </div>
+  </nav>
+
+  <!-- INTRO -->
+  <section id="intro">
+    <h2>Introduction</h2>
+    <p class="muted">
+      This document explains the full lifecycle of the <strong>AI Agent</strong> project:
+      from local installs (systemd + virtualenv) to Kubernetes production using Helm.
+      It documents the main scripts, Helm charts, CI integration, smoke-tests, and emergency repair tooling.
+    </p>
+
+    <h3>What this stack contains</h3>
+    <ul class="muted">
+      <li>Dashboard (Flask + Gunicorn)</li>
+      <li>Worker (RQ, Redis-backed job queues)</li>
+      <li>Frontend (React + Vite + Tailwind)</li>
+      <li>DevOps: Helm charts, CI workflows, one-click installers</li>
+      <li>Tools: smoke tests, healthchecks, repair utilities</li>
+    </ul>
+
+    <h3>High-level architecture</h3>
+    <div class="diagram">
+AI Client (browser)
+     │
+     ▼
+  Frontend (React) ──→ Backend API (Flask/Gunicorn)
+                           │
+                           ├── Redis (RQ) ← Worker(s)
+                           └── Metrics / Health endpoints
+    </div>
+  </section>
+
+  <!-- REPO STRUCTURE -->
+  <section id="repo-structure">
+    <h2>Repository structure overview</h2>
+    <p class="muted">Key folders and files you will use frequently (trimmed view):</p>
+
+    <pre>
+/ (repo root)
+├── ai-agent/                 # core application Python + dashboard + scripts
+├── devops/                   # Helm charts, systemd templates, tools
+│   ├── helm/aiagent
+│   └── tools/
+├── frontend/                 # React app (Vite + Tailwind)
+├── charts/aiagent            # alternative charts used by installer
+├── installer.sh              # main full-power installer (systemd path)
+├── installer_master.sh       # master orchestrator (kube or local)
+├── oneclick_cluster_install.sh
+├── tools/                    # emergency repair, bundle builders
+└── .github/                  # CI/CD workflows
+    </pre>
+
+    <h3>Paths used by installers</h3>
+    <table>
+      <tr><th>Path</th><th>Purpose</th></tr>
+      <tr><td><code>/opt/ai-agent</code></td><td>Default runtime installation folder for systemd installs</td></tr>
+      <tr><td><code>/etc/ai-agent/env</code></td><td>Environment file containing secrets & configuration</td></tr>
+      <tr><td><code>devops/helm/aiagent</code></td><td>Main Helm chart used for Kubernetes</td></tr>
+      <tr><td><code>devops/tools/post_deploy_smoke.sh</code></td><td>Smoke test wrapper used by CI & installer</td></tr>
+    </table>
+  </section>
+
+  <!-- INSTALL MODES -->
+  <section id="install-modes">
+    <h2>Installation modes</h2>
+
+    <h3>Local / Systemd installation (recommended for single-server)</h3>
+    <p class="muted">Primary script: <code>installer.sh</code> (or <code>aiagent_full_power_installer.sh</code>).</p>
+    <ol class="muted">
+      <li>Create system user <code>aiagent</code></li>
+      <li>Create venv, install pip requirements</li>
+      <li>Create systemd units (<code>aiagent-app.service</code>, <code>aiagent-rq.service</code>)</li>
+      <li>Optionally build Docker images or run via systemd</li>
+      <li>Install Nginx template and configure certificates (optional)</li>
+    </ol>
+
+    <h3>Kubernetes / Helm deployment</h3>
+    <p class="muted">Primary orchestrator: <code>installer_master.sh --kube-deploy</code> which delegates to Helm.</p>
+    <p class="muted">The repo contains charts at <code>devops/helm/aiagent</code>, split into sub-charts (web, worker) to allow independent scaling.</p>
+
+    <h3>Commands (examples)</h3>
+    <pre>sudo ./installer.sh install
+# or, to deploy on k8s
+sudo ./installer_master.sh --kube-deploy --kubeconfig ~/.kube/config --namespace aiagent --production-verify "kubectl -n aiagent get all"</pre>
+
+    <div class="box">
+      <strong>Important</strong> — the installer scripts prefer sensible defaults and attempt auto-repair when possible. They create backups before modifying critical system files.
+    </div>
+  </section>
+
+  <!-- ONE-CLICK CLUSTER -->
+  <section id="oneclick">
+    <h2>One-Click Cluster Installation</h2>
+    <p class="muted">Script: <code>oneclick_cluster_install.sh</code> (repo root). It performs:</p>
+    <ul class="muted">
+      <li>Installs/ensures <code>kubectl</code>, <code>helm</code></li>
+      <li>Deploys <code>ingress-nginx</code> (or ensures it exists)</li>
+      <li>Deploys <code>cert-manager</code> and sets up production/staging Issuers</li>
+      <li>Deploys Redis (Helm chart or Kubernetes manifest)</li>
+      <li>Installs Helm chart <code>devops/helm/aiagent</code> with production values</li>
+    </ul>
+
+    <h3>Minimal run (example)</h3>
+    <pre>sudo bash ./oneclick_cluster_install.sh --kubeconfig ~/.kube/config --namespace aiagent --email admin@yourdomain.com</pre>
+
+    <h3>What it sets up</h3>
+    <pre class="muted">
+  ┌────────────────────────┐
+  │   Kubernetes cluster   │
+  │  ┌──────────────────┐  │
+  │  │ingress-nginx     │  │
+  │  │cert-manager      │  │
+  │  │redis             │  │
+  │  └──────────────────┘  │
+  │        ↓ deploy         │
+  │  aiagent (web + worker) │
+  └────────────────────────┘
+    </pre>
+  </section>
+
+  <!-- CLOUD PROVISIONERS -->
+  <section id="cloud-provisioners">
+    <h2>Cloud provisioners</h2>
+    <p class="muted">Scripts for creating clusters on public clouds (examples in <code>cloud-provisioners/</code>):</p>
+    <ul class="muted">
+      <li><code>do_create_cluster.sh</code> — DigitalOcean</li>
+      <li><code>aws_create_cluster.sh</code> — AWS (eksctl or Terraform wrapper)</li>
+      <li><code>gcp_create_cluster.sh</code> — GKE bootstrap</li>
+    </ul>
+
+    <h3>Notes</h3>
+    <ul class="muted">
+      <li>Provisioner scripts are opinionated — review and set up credentials before running.</li>
+      <li>They typically create a kubeconfig and call <code>oneclick_cluster_install.sh</code>.</li>
+    </ul>
+  </section>
+
+  <!-- DEVOPS TOOLS -->
+  <section id="devops-tools">
+    <h2>DevOps helper tools</h2>
+    <h3>Key scripts</h3>
+    <table>
+      <tr><th>Script</th><th>Role</th></tr>
+      <tr><td><code>devops/tools/post_deploy_smoke.sh</code></td><td>Wrapper around <code>modules/healthcheck.sh</code> used to validate post-deploy status.</td></tr>
+      <tr><td><code>tools/build_aiagent_bundle.sh</code></td><td>Creates deterministic zip bundle containing needed artifacts for offline install.</td></tr>
+      <tr><td><code>tools/emergency-total-repair.sh</code></td><td>Large repair harness invoked when installers fail — cleans locks, repairs dpkg, fetches .debs.</td></tr>
+      <tr><td><code>devops/tools/deploy_from_zip.sh</code></td><td>Server-side deployer that extracts the bundle and runs the bundled installer with retry/repair logic.</td></tr>
+    </table>
+
+    <h3>Healthchecks & smoke</h3>
+    <pre>
+# Example smoke
+devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 60
+# This will:
+# - detect whether target is k8s namespace or local host
+# - perform port-forwarding if needed
+# - curl the endpoint with retries
+    </pre>
+  </section>
+
+  <!-- CI/CD -->
+  <section id="cicd">
+    <h2>CI / CD</h2>
+    <p class="muted">Workflows are stored in <code>.github/workflows/</code> and are mirrored in <code>github_actions/</code> for convenience.</p>
+
+    <h3>Primary workflows</h3>
+    <ul class="muted">
+      <li><strong>build-zip-and-test.yml</strong> — builds release ZIP, runs unit tests, and artifacts the bundle</li>
+      <li><strong>ci-smoke.yml</strong> — after building images or charts, runs smoke tests (post-deploy smoke wrapper)</li>
+      <li><strong>helm-deploy.yml</strong> — deploys Helm chart to a pre-configured cluster (used in CD)</li>
+      <li><strong>protected-merge.yml</strong> — gating workflow for protected branch merges</li>
+    </ul>
+
+    <h3>CI best practices (applied)</h3>
+    <ol class="muted">
+      <li>Fail fast for build errors; allow failing post-deploy smoke only if optional flag set</li>
+      <li>Publish build artifacts (release zip, images) to artifacts and registries</li>
+      <li>Run smoke tests with clear timeout & retry semantics</li>
+      <li>Use imagePullSecrets and private registry support in Helm</li>
+    </ol>
+
+    <h3>Example CI job snippet</h3>
+    <pre>
+# simplified job snippet
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build bundle
+        run: ./build_release_zip.sh
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiagent_bundle
+          path: ./dist/aiagent_release_*.zip
+    </pre>
+  </section>
+
+  <!-- PRODUCTION DEPLOY -->
+  <section id="production">
+    <h2>Production deployment guide</h2>
+
+    <h3>Recommended sequence</h3>
+    <ol class="muted">
+      <li>Prepare cluster and credentials</li>
+      <li>Install ingress-nginx and cert-manager via Helm (or via oneclick script)</li>
+      <li>Create namespace <code>aiagent</code></li>
+      <li>Install Redis (Helm) or a managed service</li>
+      <li>Deploy Helm chart <code>devops/helm/aiagent</code> with <code>values-production.yaml</code></li>
+      <li>Run post-deploy smoke; confirm /healthz & metrics</li>
+      <li>Configure imagePullSecret for private registries if needed</li>
+    </ol>
+
+    <h3>Helm notes</h3>
+    <p class="muted">The chart contains probes and resources tuned for production. `values-production.yaml` includes sensible defaults (replica counts, resources, TLS config).</p>
+
+    <h3>Ingress + cert-manager</h3>
+    <pre>
+# Example: using cluster issuer with LetsEncrypt
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@yourdomain.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    </pre>
+
+    <div class="box">
+      <strong>Smoke example (post deploy)</strong>
+      <pre class="muted">kubectl -n aiagent get all
+kubectl -n aiagent describe ingress aiagent-ingress
+devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 60</pre>
+    </div>
+  </section>
+
+  <!-- UPGRADE & REPAIR -->
+  <section id="upgrade-repair">
+    <h2>Upgrade & Repair</h2>
+    <p class="muted">There are multiple facilities to safely upgrade and repair systems:</p>
+
+    <h3>Upgrade flow</h3>
+    <ol class="muted">
+      <li>Build new bundle & container images</li>
+      <li>Apply Helm upgrades: <code>helm upgrade --install ...</code></li>
+      <li>Run post-deploy smoke tests</li>
+      <li>If failure, use Helm rollback: <code>helm rollback aiagent 1</code></li>
+    </ol>
+
+    <h3>Emergency repair</h3>
+    <p class="muted">Script: <code>tools/emergency-total-repair.sh</code>. It will:</p>
+    <ul class="muted">
+      <li>Kill stuck apt/dpkg processes & remove locks</li>
+      <li>Run <code>dpkg --configure -a</code> and <code>apt-get install -f</code></li>
+      <li>Attempt wget fallback to download and install .deb files</li>
+      <li>Optionally re-run installer steps</li>
+    </ul>
+
+    <h3>doctor.sh</h3>
+    <p class="muted">Run diagnostics and produce a report. Use it to collect logs and detect common problems.</p>
+  </section>
+
+  <!-- UNINSTALL -->
+  <section id="uninstall">
+    <h2>Uninstall</h2>
+    <p class="muted">There are two modes: Local (systemd) or Kubernetes.</p>
+
+    <h3>Local</h3>
+    <pre class="muted">
+# Stop services
+sudo systemctl stop aiagent-app aiagent-rq
+# Disable
+sudo systemctl disable aiagent-app aiagent-rq
+# Remove files (be careful)
+sudo rm -rf /opt/ai-agent /etc/ai-agent /var/log/aiagent
+    </pre>
+
+    <h3>Kubernetes</h3>
+    <pre class="muted">
+# Helm uninstall
+helm -n aiagent uninstall aiagent
+# Remove namespace (optional)
+kubectl delete namespace aiagent
+# Remove cert-manager/ingress if not used by other workloads
+    </pre>
+  </section>
+
+  <!-- DEVELOPER -->
+  <section id="developer">
+    <h2>Developer workflow</h2>
+
+    <h3>Running locally (quick)</h3>
+    <pre class="muted">
+# Install dependencies and venv
+python3 -m venv venv
+source venv/bin/activate
+pip install -r ai-agent/requirements.txt
+
+# Run dashboard locally
+cd ai-agent/dashboard
+export FLASK_APP=app.py
+flask run --port=8000
+    </pre>
+
+    <h3>Frontend dev</h3>
+    <pre class="muted">
+cd frontend
+npm install
+npm run dev
+# or using yarn/pnpm per your setup
+    </pre>
+
+    <h3>Running worker locally</h3>
+    <pre class="muted">
+# Ensure redis running locally (docker run -d -p 6379:6379 redis:7)
+rq worker -u redis://127.0.0.1:6379/0
+    </pre>
+
+    <h3>Running tests</h3>
+    <pre class="muted">
+# Run pytest
+cd ai-agent
+pytest -q
+    </pre>
+  </section>
+
+  <!-- SECURITY -->
+  <section id="security">
+    <h2>Security model</h2>
+    <h3>Secrets & configuration</h3>
+    <p class="muted"><code>/etc/ai-agent/env</code> is the canonical place for secrets for systemd installs. Ensure it is mode 600 and owned by <code>root:root</code>.</p>
+
+    <h3>TLS</h3>
+    <p class="muted">Use cert-manager with LetsEncrypt for automated certificates. Keep ACME emails and ingress class configured correctly.</p>
+
+    <h3>Registry</h3>
+    <p class="muted">For private registries, create <code>imagePullSecrets</code> and either attach them to the default service account or configure the Helm chart to use them.</p>
+
+    <h3>Least privilege</h3>
+    <p class="muted">Run services as <code>aiagent</code> user locally. In Kubernetes, use PodSecurityPolicy / Pod Security admission or Pod Security Standards.</p>
+  </section>
+
+  <!-- TROUBLESHOOT -->
+  <section id="troubleshooting">
+    <h2>Troubleshooting</h2>
+
+    <h3>Common issues</h3>
+    <ul class="muted">
+      <li><strong>apt-get hangs</strong> — run <code>tools/dpkg-emergency-repair.sh</code> or the emergency repair script</li>
+      <li><strong>Service fails to start</strong> — check journals: <code>journalctl -u aiagent-app -b</code></li>
+      <li><strong>Pod crashloop</strong> — <code>kubectl -n aiagent logs pod &lt;podname&gt;</code> and check liveness/readiness probes</li>
+      <li><strong>Ingress TLS not ready</strong> — ensure cert-manager webhook and issuer are healthy and check Certificate resources</li>
+    </ul>
+
+    <h3>Health endpoints</h3>
+    <pre class="muted">
+# Local
+curl -fsS http://127.0.0.1:8000/healthz
+
+# In k8s (via port-forward)
+kubectl -n aiagent port-forward svc/aiagent-web 8000:8000
+curl -fsS http://127.0.0.1:8000/healthz
+    </pre>
+
+    <h3>Gathering diagnostics</h3>
+    <pre class="muted">
+# systemd installs
+sudo journalctl -u aiagent-app -n 400 > /tmp/aiagent_app.log
+sudo journalctl -u aiagent-rq -n 400 > /tmp/aiagent_worker.log
+
+# k8s
+kubectl -n aiagent get pods -o wide
+kubectl -n aiagent describe pod &lt;pod&gt;
+kubectl -n aiagent logs &lt;pod&gt; --all-containers
+    </pre>
+  </section>
+
+  <!-- APPENDIX -->
+  <section id="appendix">
+    <h2>Appendix</h2>
+
+    <h3>Useful file locations</h3>
+    <table>
+      <tr><th>File</th><th>Description</th></tr>
+      <tr><td><code>installer_master.sh</code></td><td>Master orchestrator supporting kube/local flows</td></tr>
+      <tr><td><code>installer.sh</code></td><td>Full-power local installer / repair tool</td></tr>
+      <tr><td><code>oneclick_cluster_install.sh</code></td><td>One-click for cluster prerequisites and helm deploy</td></tr>
+      <tr><td><code>devops/helm/aiagent/values-production.yaml</code></td><td>Production Helm values</td></tr>
+      <tr><td><code>devops/tools/post_deploy_smoke.sh</code></td><td>Smoke wrapper for CI and deploy scripts</td></tr>
+    </table>
+
+    <h3>Glossary</h3>
+    <dl class="muted">
+      <dt>Helm</dt><dd>Package manager for Kubernetes</dd>
+      <dt>Cert-Manager</dt><dd>ACME/Let’s Encrypt automation for Kubernetes</dd>
+      <dt>imagePullSecret</dt><dd>Kubernetes secret allowing pods to pull from private registries</dd>
+    </dl>
+
+    <h3>Reference commands</h3>
+    <pre class="muted">
+# Helm deploy (example)
+helm upgrade --install aiagent devops/helm/aiagent -n aiagent -f devops/helm/aiagent/values-production.yaml --wait --timeout 10m
+
+# Verify
+kubectl -n aiagent get all
+    </pre>
+
+    <h3>Contact / Contributing</h3>
+    <p class="muted">Please open PRs for chart improvements, CI changes, or installer fixes. For urgent issues, use the repo's issue tracker and include diagnostics output described above.</p>
+  </section>
+
+  <footer>
+    <div class="muted">Generated: <span id="gen_ts"></span> — This document reflects repository structure and scripts discussed in the project's DevOps conversation.</div>
+  </footer>
+</div>
+
+<script>
+  document.getElementById('gen_ts').innerText = new Date().toISOString();
+  // Smooth-link scrolling
+  document.querySelectorAll('nav.toc a').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 7 — Executor Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.65;
+      padding: 32px;
+    }
+    h1, h2, h3 { color: #58a6ff; }
+    h1 { border-bottom: 1px solid #30363d; padding-bottom: 12px; }
+    section { margin-bottom: 48px; }
+    pre { background: #161b22; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    code { color: #d2a8ff; }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning { color: #ff7b72; font-weight: bold; }
+    .truth { color: #7ee787; font-weight: bold; }
+    .flow { color: #f2cc60; }
+  </style>
+</head>
+<body>
+
+<h1>STEP 7 — Executor Agent</h1>
+<p class="truth">Max-Logic • Deterministic Execution • Closed Feedback Loop</p>
+
+<section>
+  <h2>1. Position in the Global System</h2>
+  <pre><code>STEP 1 → Intent Truth
+STEP 2 → Context Snapshot
+STEP 3 → Structural Validation
+STEP 4 → Gaps & Inference
+STEP 5 → Execution Plan
+STEP 6 → Architecture Spec
+STEP 7 → Execution & Verification</code></pre>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">Execution without feedback is blind automation.</p>
+    <p>
+      The Executor Agent is the only component allowed to touch the real system
+      (filesystem, commands, runtime, tests).
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Inputs</h2>
+  <pre><code>Inputs:
+- ArchitectureSpec (STEP 6)
+- ExecutionPlan (STEP 5)
+- Validated Constraints (STEP 3)
+- Inference Notes (STEP 4)</code></pre>
+</section>
+
+<section>
+  <h2>4. Responsibilities (Strict)</h2>
+  <ul>
+    <li>Create files and folders exactly as specified</li>
+    <li>Write code according to architectural contracts</li>
+    <li>Run commands (build, test, lint, run)</li>
+    <li>Capture outputs (stdout, stderr, exit codes)</li>
+    <li>Detect errors and regressions</li>
+    <li>Trigger correction loops</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Internal Structure</h2>
+  <pre><code>Executor Agent
+ ├─ Code Generator
+ ├─ File System Operator
+ ├─ Command Runner (CMD / Shell)
+ ├─ Output Collector
+ ├─ Error Analyzer
+ ├─ Fix Generator
+ └─ Verification Gate</code></pre>
+</section>
+
+<section>
+  <h2>6. Execution Loop (Closed)</h2>
+  <pre><code class="flow">Generate Code
+   ↓
+Write Files
+   ↓
+Run Commands / Tests
+   ↓
+Capture Output
+   ↓
+Analyze Errors
+   ↓
+Apply Fixes
+   ↓
+Re-run Verification
+   ↓
+PASS → Continue
+FAIL → Loop</code></pre>
+  <p class="truth">The loop never escalates unless verification passes.</p>
+</section>
+
+<section>
+  <h2>7. Command Execution Rules</h2>
+  <pre><code>Allowed Commands:
+- build / compile
+- test / lint
+- run dev servers
+- docker compose
+- migrations
+
+Forbidden:
+- destructive system commands
+- data deletion without snapshot</code></pre>
+</section>
+
+<section>
+  <h2>8. Error Classification</h2>
+  <pre><code>Error Types:
+- Syntax errors
+- Runtime exceptions
+- Test failures
+- Contract violations
+- Architecture breaches</code></pre>
+</section>
+
+<section>
+  <h2>9. Fix Strategy</h2>
+  <p>
+    Fixes are generated under strict constraints:
+  </p>
+  <ul>
+    <li>No architectural violation allowed</li>
+    <li>No scope expansion</li>
+    <li>No silent behavior change</li>
+  </ul>
+</section>
+
+<section>
+  <h2>10. Verification Gate</h2>
+  <div class="box">
+    <ul>
+      <li>All commands exit with code 0</li>
+      <li>All tests pass</li>
+      <li>No new warnings introduced</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>11. Output Artifacts</h2>
+  <pre><code>ExecutorOutput {
+  files_created: string[]
+  commands_run: string[]
+  logs: string
+  test_results: pass | fail
+  fixes_applied: number
+}</code></pre>
+</section>
+
+<section>
+  <h2>12. Safety Guarantees</h2>
+  <p class="truth">
+    The Executor Agent cannot:
+  </p>
+  <ul>
+    <li>Invent architecture</li>
+    <li>Ignore validation rules</li>
+    <li>Hide errors</li>
+  </ul>
+</section>
+
+<section>
+  <h2>13. Handoff</h2>
+  <pre><code>STEP 7 Output → Verified Implementation
+        ↓
+STEP 8 Input → Memory & Learning System</code></pre>
+</section>
+
+</body>
+</html>

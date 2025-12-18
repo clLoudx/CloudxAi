@@ -1,0 +1,29 @@
+# Patch: fix-paths.patch
+# Description: Standardize all installation paths from /opt/aiagent to /opt/ai-agent
+# Date: 2025-01-27
+# Status: Applied (documentation only - changes already made)
+
+# This patch documents the path standardization that was performed.
+# All references to /opt/aiagent (without hyphen) have been updated to /opt/ai-agent (with hyphen).
+
+# Files modified (already applied):
+# - installer.sh: INSTALL_ROOT="/opt/ai-agent"
+# - uninstaller.sh: TARGET_DIR="/opt/ai-agent" (with migration support)
+# - upgrade.sh: Path detection updated
+# - devops/systemd/aiagent.service: WorkingDirectory=/opt/ai-agent
+# - ai-agent/mega_installer_v1.sh: TARGET_DIR="/opt/ai-agent"
+# - devops/tools/deploy_from_zip.sh: TARGET="${TARGET:-/opt/ai-agent}"
+# - tools/emergency-total-repair.sh: TARGET_DIR="/opt/ai-agent"
+# - ai-agent/modules/installer_helpers.sh: BACKUP_DIR="/opt/ai-agent-backups"
+# - ai-agent/modules/logging.sh: DEFAULT_BACKUP_DIR="/opt/ai-agent-backups"
+# - tools/build_aiagent_bundle.sh: Backup path updated
+
+# Migration support:
+# - uninstaller.sh supports both paths for backward compatibility
+# - upgrade.sh detects and migrates from old path
+# - doctor.sh checks both paths (canonical first)
+
+# Verification:
+# Run: grep -r "/opt/aiagent[^-/]" --include="*.sh" --include="*.service" . | grep -v ".deprecated" | grep -v "docs/" | grep -v "TARGET_DIR_LEGACY" | wc -l
+# Expected: 0
+

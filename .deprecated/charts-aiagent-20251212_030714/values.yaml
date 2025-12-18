@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: aiagent_web
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: [] # - name: regcred
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+ingress:
+  enabled: true
+  annotations: {}
+  hosts:
+    - host: aiagent.local
+      paths:
+        - /
+
+livenessProbe:
+  path: /healthz
+  initialDelaySeconds: 10
+  periodSeconds: 15
+readinessProbe:
+  path: /healthz
+  initialDelaySeconds: 5
+  periodSeconds: 10
+

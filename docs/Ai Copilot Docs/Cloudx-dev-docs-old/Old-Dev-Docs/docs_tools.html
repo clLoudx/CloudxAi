@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Agent — Tools Manual (PRO)</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#0f1720; --muted:#9aa7b2; --accent:#7dd3fc;
+    --good:#10b981; --warn:#f59e0b; --bad:#ef4444; --glass:rgba(255,255,255,0.03);
+    --mono: "SFMono-Regular", ui-monospace, "Roboto Mono", "Courier New", monospace;
+    --maxw:1200px;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+  body{background:linear-gradient(180deg,#071019 0%, #07121a 60%); color:#e6eef3; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:28px auto;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;box-shadow:0 10px 40px rgba(2,6,23,0.7);}
+  header{display:flex;gap:18px;align-items:center;justify-content:space-between;}
+  .brand{display:flex;gap:16px;align-items:center}
+  .logo{width:58px;height:58px;background:linear-gradient(135deg,#00d4ff,#7c3aed);border-radius:10px;display:grid;place-items:center;font-weight:700;color:#022;box-shadow:0 6px 20px rgba(124,58,237,0.18);}
+  h1{margin:0;font-size:20px;letter-spacing:-0.2px}
+  p.lead{margin:6px 0 0;color:var(--muted);font-size:13px}
+  nav.toc{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
+  nav.toc a{color:var(--accent);text-decoration:none;padding:8px 12px;border-radius:8px;background:var(--glass);font-size:13px}
+  .grid{display:grid;grid-template-columns:320px 1fr;gap:22px;margin-top:20px}
+  aside{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));padding:16px;border-radius:10px;height:calc(100vh - 200px);overflow:auto}
+  aside h3{margin:0 0 10px 0;font-size:14px;color:var(--muted)}
+  aside ul{list-style:none;padding:0;margin:0}
+  aside li{margin:8px 0}
+  aside a{color:#cfeffb;text-decoration:none;font-size:14px}
+  main{padding:18px;background:transparent;border-radius:10px;overflow:auto}
+  section.card{background:linear-gradient(90deg, rgba(255,255,255,0.016), rgba(255,255,255,0.01));padding:18px;border-radius:10px;margin-bottom:18px}
+  .meta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+  pre.code{background:#021019;color:#cff7ff;padding:14px;border-radius:8px;overflow:auto;font-family:var(--mono);font-size:12px}
+  code.inline{background:rgba(255,255,255,0.03);padding:3px 6px;border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:12px}
+  h2{margin:0 0 12px 0}
+  h3{margin:0 0 8px 0}
+  .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+  .kpi .item{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;min-width:160px}
+  .muted{color:var(--muted);font-size:13px}
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));padding:12px;border-radius:8px;margin:10px 0}
+  details{background:rgba(255,255,255,0.01);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:12px;color:var(--muted)}
+  .cta{display:inline-block;background:linear-gradient(90deg,#7dd3fc,#60a5fa);color:#042; padding:10px 14px;border-radius:10px;font-weight:700;text-decoration:none}
+  .diagram{background:#02131a;padding:12px;border-radius:8px;margin:12px 0;overflow:auto;font-family:var(--mono);font-size:12px;color:#9fe;}
+  footer{margin-top:20px;color:var(--muted);font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  table th,table td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);text-align:left}
+  .warnbox{background:linear-gradient(90deg, rgba(245,158,11,0.06), rgba(245,158,11,0.02));padding:10px;border-radius:8px;border:1px solid rgba(245,158,11,0.06)}
+  .goodbox{background:linear-gradient(90deg, rgba(16,185,129,0.06), rgba(16,185,129,0.02));padding:10px;border-radius:8px;border:1px solid rgba(16,185,129,0.06)}
+  .toc-mini{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .small{font-size:12px;color:var(--muted)}
+  .code-toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
+  .btn-copy{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);padding:6px 10px;border-radius:8px;color:var(--accent);cursor:pointer}
+  @media (max-width:1000px){ .grid{grid-template-columns:1fr; } aside{height:auto} }
+</style>
+</head>
+<body>
+<div class="wrap" role="document">
+  <header>
+    <div class="brand">
+      <div class="logo">AG</div>
+      <div>
+        <h1>AI Agent — Tools Manual (PRO) — Operations & Repair Toolkit</h1>
+        <p class="lead">Deep developer & SRE documentation for the five tool scripts: <strong>install.sh</strong>, <strong>full_power_uninstaller.sh</strong>, <strong>upgrade.sh</strong>, <strong>doctor.sh</strong>, <strong>service-repair.sh</strong>. This is the canonical guide for operators & devs.</p>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="pill">Version: PRO · Generated: <span id="genDate"></span></div>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Quick links">
+    <a href="#summary">Executive Summary</a>
+    <a href="#install">install.sh (Ultra Installer)</a>
+    <a href="#uninstall">Uninstaller</a>
+    <a href="#upgrade">Upgrade</a>
+    <a href="#doctor">Doctor (Deep Repair)</a>
+    <a href="#repair">Service Repair</a>
+    <a href="#ops">Operational Playbook</a>
+    <a href="#faqs">FAQs & Troubleshooting</a>
+    <a href="#appendix">Appendix & Templates</a>
+  </nav>
+
+  <div class="grid" role="main">
+    <aside aria-label="Navigation">
+      <h3>Tools</h3>
+      <ul>
+        <li><a href="#install">install.sh — Ultra Installer</a></li>
+        <li><a href="#uninstall">full_power_uninstaller.sh</a></li>
+        <li><a href="#upgrade">upgrade.sh</a></li>
+        <li><a href="#doctor">doctor.sh — Ultra Doctor</a></li>
+        <li><a href="#repair">service-repair.sh</a></li>
+      </ul>
+
+      <div class="toc-mini">
+        <div class="small">Usage tips</div>
+        <div class="small">• Run doctor before upgrade. • Keep /etc/ai-agent/env out of git.</div>
+        <div class="small">• Backups saved to <code>/opt/aiagent-backups/</code>. Rotate regularly.</div>
+      </div>
+
+      <div style="margin-top:14px">
+        <h3>Quick commands</h3>
+        <pre class="code small">sudo ./install.sh --non-interactive
+sudo ./doctor.sh
+sudo ./upgrade.sh
+sudo ./full_power_uninstaller.sh --dry-run</pre>
+      </div>
+
+      <div style="margin-top:14px">
+        <h3>Contact</h3>
+        <div class="muted">Ops: ops-team@example.com</div>
+      </div>
+    </aside>
+
+    <main>
+      <!-- EXECUTIVE -->
+      <section id="summary" class="card">
+        <h2>Executive Summary</h2>
+        <p>This document is the authoritative operator & developer manual for the AI Agent operations toolkit. It covers the complete lifecycle: installation, verification (doctor), upgrade, targeted repairs (service-repair), and safe uninstallation. The tools were designed with the following core principles:</p>
+        <ul>
+          <li><strong>Idempotent & safe</strong> — repeated runs do not corrupt state.</li>
+          <li><strong>ARM/AMD aware</strong> — detects architecture and selects correct packages or strategies.</li>
+          <li><strong>Backups first</strong> — every destructive action creates a tarball into <code>/opt/aiagent-backups/</code>.</li>
+          <li><strong>Non-destructive defaults</strong> — keep secrets, require explicit flags to delete.</li>
+          <li><strong>Diagnostics-first</strong> — doctor produces a JSON report and guided fixes.</li>
+        </ul>
+
+        <div class="kpi">
+          <div class="item"><strong>Primary paths</strong><div class="muted">/opt/ai-agent, /etc/ai-agent</div></div>
+          <div class="item"><strong>Systemd units</strong><div class="muted">aiagent-app.service, aiagent-rq.service</div></div>
+          <div class="item"><strong>Redis</strong><div class="muted">Docker container: aiagent-redis (default)</div></div>
+        </div>
+
+        <div class="panel">
+          <h3>Operational workflows</h3>
+          <ol>
+            <li>Install (installer → create venv, systemd, redis)</li>
+            <li>Run <code>doctor.sh</code> to validate & auto-fix non-critical issues</li>
+            <li>Deploy upgrades using <code>upgrade.sh</code></li>
+            <li>Use <code>service-repair.sh</code> to troubleshoot systemd/docker/redis problems</li>
+            <li>If needed, remove everything with <code>full_power_uninstaller.sh</code> after taking backups</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- INSTALL -->
+      <section id="install" class="card">
+        <h2>install.sh — Ultra Installer (summary)</h2>
+        <p class="muted">Purpose: safe, optimized, fast installer that prepares the target host for production. The script is <strong>idempotent</strong>, does safe apt repairs, creates a dedicated system user, deploys the project to <code>/opt/ai-agent</code>, creates a Python venv, installs requirements (with automatic build-dep handling), optionally installs Docker and starts Redis.</p>
+
+        <h3>Key features</h3>
+        <ul>
+          <li>APT health repair (safe minimal sources for jammy fallback, ARM-aware)</li>
+          <li>Fast apt flags and mirror selection to accelerate downloads</li>
+          <li>Intelligent pip retry loop: detects rust & python headers needs and installs them before retrying</li>
+          <li>Creates systemd service templates and enables them (optional)</li>
+          <li>Non-interactive & dry-run modes for CI integration</li>
+        </ul>
+
+        <h3>Flags & usage</h3>
+        <table>
+          <tr><th>Flag</th><th>Description</th></tr>
+          <tr><td><code>--target-dir PATH</code></td><td>Install target (default: /opt/ai-agent)</td></tr>
+          <tr><td><code>--install-docker yes|no</code></td><td>Install docker.io via apt</td></tr>
+          <tr><td><code>--start-redis yes|no</code></td><td>Start Redis container after install</td></tr>
+          <tr><td><code>--enable-systemd yes|no</code></td><td>Generate systemd unit files & enable them</td></tr>
+          <tr><td><code>--non-interactive</code></td><td>No confirmations</td></tr>
+          <tr><td><code>--dry-run</code></td><td>Show actions but do not execute</td></tr>
+        </table>
+
+        <h3>Example</h3>
+        <div class="code-toolbar"><button class="btn-copy" data-clipboard-target="#install-cmd">Copy</button></div>
+        <pre id="install-cmd" class="code">sudo ./install.sh --non-interactive --install-docker yes --start-redis yes --enable-systemd yes</pre>
+
+        <h3>Installer internals (flow)</h3>
+        <pre class="diagram">
+1) Detect environment (arch, distro, codename)
+2) Test apt & repair safe sources if necessary
+3) Install minimal base packages
+4) Optionally install Docker
+5) Deploy project via rsync → /opt/ai-agent
+6) Create system user 'aiagent' & fix ownership
+7) Create /etc/ai-agent/env (permissions 600)
+8) Create Python venv, pip install reqs with retry/backoff logic
+   - If pip fails due to rust/python-headers -> install required build deps and retry
+9) Start Redis container (docker) if requested
+10) Create systemd units & enable (optional)
+11) Verify basic health: ports, venv imports, redis ping
+        </pre>
+
+        <h3>Notes & best practices</h3>
+        <ul>
+          <li>Always check <code>/etc/ai-agent/env</code> after install and populate secrets before enabling services.</li>
+          <li>Use <code>--dry-run</code> in unfamiliar environments to preview changes.</li>
+          <li>Install saves backup bundles under <code>/opt/aiagent-backups</code> on upgrade or destructive ops.</li>
+        </ul>
+      </section>
+
+      <!-- UNINSTALLER -->
+      <section id="uninstall" class="card">
+        <h2>full_power_uninstaller.sh</h2>
+        <p class="muted">Purpose: fully remove the AI Agent instance while preserving safety. The script backs up your installation into <code>/opt/aiagent-backups</code> before any removal.</p>
+
+        <h3>Behavior & safety</h3>
+        <ul>
+          <li>By default the script preserves <code>/etc/ai-agent/env</code> (secrets). Use <code>--remove-env</code> to explicitly delete secrets.</li>
+          <li>Creates a compressed backup bundle before removal.</li>
+          <li>Removes systemd unit files, stops services, removes Redis Docker container (if present).</li>
+          <li>Optional removal of the <code>aiagent</code> system user.</li>
+        </ul>
+
+        <h3>Flags & usage</h3>
+        <table>
+          <tr><th>Flag</th><th>Effect</th></tr>
+          <tr><td><code>--dry-run</code></td><td>Simulate only.</td></tr>
+          <tr><td><code>--non-interactive</code></td><td>Do not prompt for confirmation.</td></tr>
+          <tr><td><code>--remove-env</code></td><td>Also delete /etc/ai-agent (destructive).</td></tr>
+          <tr><td><code>--remove-user</code></td><td>Remove <code>aiagent</code> system user.</td></tr>
+        </table>
+
+        <h3>Example</h3>
+        <pre class="code">sudo ./full_power_uninstaller.sh --dry-run</pre>
+
+        <h3>Recovery</h3>
+        <p>If something was removed accidentally, restore the backup:</p>
+        <pre class="code">sudo tar -xzf /opt/aiagent-backups/backup_YYYYMMDD_HHMMSS.tar.gz -C /</pre>
+      </section>
+
+      <!-- UPGRADE -->
+      <section id="upgrade" class="card">
+        <h2>upgrade.sh — PRO Upgrade System</h2>
+        <p class="muted">Purpose: Safe rolling upgrades with full rollback capability. Supports ZIP, Git, local, or patch-based upgrades.</p>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Creates a full backup tarball before upgrade</li>
+          <li>Stops services gracefully, swaps code atomically, restarts services</li>
+          <li>Validates venv & installs new requirements</li>
+          <li>Rollback automatically if the app service fails to start</li>
+        </ul>
+
+        <h3>Usage flow</h3>
+        <pre class="diagram">
+1) Create backup → /opt/aiagent-backups/upgrade_backup_TIMESTAMP.tar.gz
+2) Stop aiagent-app & aiagent-rq
+3) Prepare new code in /opt/ai-agent-new-TIMESTAMP
+   - Extract ZIP / clone Git / rsync local folder
+4) Swap directory (atomic move)
+5) Reinstall requirements into existing venv or recreate venv
+6) Restart services, validate health (systemctl active + port 8000)
+7) If failure → rollback by extracting backup tarball
+        </pre>
+
+        <h3>Example</h3>
+        <pre class="code">sudo ./upgrade.sh</pre>
+
+        <h3>Notes</h3>
+        <ul>
+          <li>Prefer Git or ZIP deployments tested in staging first.</li>
+          <li>When using multi-node setups, coordinate upgrades with a maintenance window.</li>
+        </ul>
+      </section>
+
+      <!-- DOCTOR -->
+      <section id="doctor" class="card">
+        <h2>doctor.sh — ULTRA DOCTOR (PRO)</h2>
+        <p class="muted">Purpose: Deep diagnostics, guided repair, and automated non-critical fixes. This is the go-to tool for SREs when the AI Agent misbehaves.</p>
+
+        <h3>Design goals</h3>
+        <ol>
+          <li>Detect common failures reliably: missing env, broken venv, docker/redis issues, systemd failures, port conflicts, disk/memory pressure</li>
+          <li>Auto-fix safe, non-critical items by default (permissions, temp cleanup, minor venv repairs)</li>
+          <li>Present clear manual actions for critical fixes</li>
+          <li>Provide a <code>--full-auto</code> escape hatch to attempt everything automatically (use with caution)</li>
+        </ol>
+
+        <h3>Modes</h3>
+        <table>
+          <tr><th>Mode</th><th>Behavior</th></tr>
+          <tr><td>Default</td><td>Auto-fix non-critical items; report critical issues</td></tr>
+          <tr><td><code>--manual-only</code></td><td>Diagnostics only, no changes</td></tr>
+          <tr><td><code>--full-auto</code></td><td>Attempt to automatically fix critical issues (may restore env from backups)</td></tr>
+        </table>
+
+        <h3>Diagnostic checks performed</h3>
+        <ul>
+          <li>ENV: presence and required variables (<code>OPENAI_API_KEY</code>, etc.)</li>
+          <li>VENV: existence and module imports (flask, rq, redis, requests)</li>
+          <li>Redis: docker-based container or system redis-cli ping</li>
+          <li>Systemd: unit installed & active for app & worker</li>
+          <li>Ports: 8000 (app), 6379 (redis)</li>
+          <li>Resources: disk & memory available</li>
+          <li>File ownership & permissions</li>
+        </ul>
+
+        <h3>Outputs</h3>
+        <ul>
+          <li>Human readable log (file): <code>/var/log/aiagent-doctor.log</code></li>
+          <li>JSON report: <code>/var/log/aiagent-doctor-report.json</code></li>
+        </ul>
+
+        <h3>Examples</h3>
+        <pre class="code">sudo ./doctor.sh            # default
+sudo ./doctor.sh --manual-only
+sudo ./doctor.sh --full-auto</pre>
+
+        <h3>Typical automatic fixes (safe)</h3>
+        <ul>
+          <li>Create <code>/etc/ai-agent</code> with correct perms</li>
+          <li>Normalize <code>/etc/ai-agent/env</code> permissions</li>
+          <li>Cleanup /tmp/* artifacts</li>
+          <li>Attempt venv recreation and pip install if simple modules are missing</li>
+        </ul>
+
+        <div class="warnbox">
+          <strong>Warning:</strong> <code>--full-auto</code> may attempt higher-impact fixes (restore env from backups, reinstall packages, recreate systemd units). Use only if you understand the consequences.
+        </div>
+      </section>
+
+      <!-- SERVICE REPAIR -->
+      <section id="repair" class="card">
+        <h2>service-repair.sh — Targeted System Repair</h2>
+        <p class="muted">Purpose: Focused tool for bringing the runtime services back up quickly: systemd, docker, redis. Designed to be used after doctor discovers service-level issues.</p>
+
+        <h3>Primary actions</h3>
+        <ul>
+          <li>Collect journal logs for app & worker and save into a repair bundle</li>
+          <li>Restart / attempt to restart systemd services</li>
+          <li>Recreate Redis container (docker) if missing</li>
+          <li>Optional <code>--auto</code> mode to attempt repairs without prompts</li>
+        </ul>
+
+        <h3>Usage</h3>
+        <pre class="code">sudo ./service-repair.sh --auto --bundle</pre>
+
+        <h3>Repair bundle</h3>
+        <p>The bundle contains recent journals and important logs, compressed into a timestamped tarball at <code>/tmp/aiagent-repair-*.tar.gz</code>. Share this bundle with devs for postmortem.</p>
+      </section>
+
+      <!-- OPS PLAYBOOK -->
+      <section id="ops" class="card">
+        <h2>Operational Playbook</h2>
+
+        <h3>Onboarding a new host (step-by-step)</h3>
+        <ol>
+          <li>Clone repo on host: <code>git clone &lt;repo&gt; /opt/ai-agent-src</code></li>
+          <li>Copy or rsync into place and run installer: <code>sudo ./install.sh --non-interactive --install-docker yes --start-redis yes --enable-systemd yes</code></li>
+          <li>Populate secrets: <code>sudo editor /etc/ai-agent/env</code></li>
+          <li>Run doctor: <code>sudo ./doctor.sh</code> — verify green</li>
+          <li>Smoke test UI: <code>curl -s http://127.0.0.1:8000/api/overview | jq</code></li>
+        </ol>
+
+        <h3>Daily checklist (SRE)</h3>
+        <ul>
+          <li>Check systemd services: <code>systemctl status aiagent-app aiagent-rq</code></li>
+          <li>Check Redis: <code>docker ps | grep aiagent-redis</code></li>
+          <li>Run <code>./doctor.sh --manual-only</code> every morning</li>
+          <li>Rotate backups and prune <code>/opt/aiagent-backups</code> monthly</li>
+        </ul>
+
+        <h3>Incident response (app unresponsive)</h3>
+        <ol>
+          <li>Run <code>doctor.sh --manual-only</code> and inspect <code>/var/log/aiagent-doctor.log</code></li>
+          <li>Run <code>service-repair.sh --auto --bundle</code> to attempt quick fixes and collect logs</li>
+          <li>If persistent, roll back to last known good backup from <code>/opt/aiagent-backups</code></li>
+          <li>Open repair bundle and escalate to devs</li>
+        </ol>
+      </section>
+
+      <!-- FAQS -->
+      <section id="faqs" class="card">
+        <h2>FAQs & Troubleshooting</h2>
+        <details><summary><strong>Q:</strong> Pip install fails building <code>tiktoken</code> or similar. What to do?</summary>
+          <div class="panel small">
+            Most common cause is missing Rust or Python headers. Installer includes logic to detect these errors and run:
+            <pre class="code">sudo apt-get install -y rustc cargo build-essential python3-dev libssl-dev libffi-dev</pre>
+            Then retry pip install. Use the installer with retry logic.
+          </div>
+        </details>
+
+        <details><summary><strong>Q:</strong> Docker not available; can I use system Redis?</summary>
+          <div class="panel small">
+            Yes — set <code>REDIS_URL</code> in <code>/etc/ai-agent/env</code> to your system Redis and ensure connectivity. Doctor checks both Docker container and external Redis.
+          </div>
+        </details>
+
+        <details><summary><strong>Q:</strong> How do I roll back an upgrade?</summary>
+          <div class="panel small">
+            If upgrade fails, the upgrade script will automatically restore the backup tarball it created. Manual rollback:
+            <pre class="code">sudo systemctl stop aiagent-app aiagent-rq
+sudo rm -rf /opt/ai-agent
+sudo tar -xzf /opt/aiagent-backups/backup_TIMESTAMP.tar.gz -C /</pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- APPENDIX -->
+      <section id="appendix" class="card">
+        <h2>Appendix — Templates, systemd snippets, recommended CI steps</h2>
+
+        <h3>systemd unit (app)</h3>
+        <pre class="code">[Unit]
+Description=AI Agent Dashboard
+After=network.target
+
+[Service]
+User=aiagent
+WorkingDirectory=/opt/ai-agent/dashboard
+EnvironmentFile=/etc/ai-agent/env
+ExecStart=/opt/ai-agent/venv/bin/gunicorn dashboard.app:app -k eventlet -b 0.0.0.0:8000 --workers 3
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target</pre>
+
+        <h3>systemd unit (worker)</h3>
+        <pre class="code">[Unit]
+Description=AI Agent RQ Worker
+After=network.target
+
+[Service]
+User=aiagent
+WorkingDirectory=/opt/ai-agent
+EnvironmentFile=/etc/ai-agent/env
+ExecStart=/bin/bash -lc "source /opt/ai-agent/venv/bin/activate; exec rq worker -u ${REDIS_URL:-redis://127.0.0.1:6379/0} default"
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target</pre>
+
+        <h3>CI checklist (GitHub Actions)</h3>
+        <pre class="code">name: CI
+on: [push,pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with: {python-version: '3.10'}
+      - run: python -m pip install --upgrade pip
+      - run: python -m venv venv && source venv/bin/activate
+      - run: pip install -r requirements.txt
+      - run: pytest -q</pre>
+
+        <h3>Debugging tips (quick)</h3>
+        <ul>
+          <li><code>sudo journalctl -u aiagent-app -f</code> to follow app logs</li>
+          <li><code>sudo journalctl -u aiagent-rq -f</code> for worker logs</li>
+          <li><code>curl -s http://127.0.0.1:8000/api/overview | jq</code> quick health check</li>
+        </ul>
+      </section>
+
+      <footer>
+        <div class="muted">This document was generated automatically as a comprehensive developer & SRE manual for the AI Agent tools suite. Keep it alongside your repo and update when scripts change. </div>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+  // small helpers
+  document.getElementById('genDate').innerText = new Date().toISOString().slice(0,19).replace('T',' ');
+  // copy buttons
+  document.querySelectorAll('.btn-copy').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const id = btn.getAttribute('data-clipboard-target');
+      const el = document.querySelector(id);
+      if(!el) return;
+      navigator.clipboard.writeText(el.innerText).then(()=> {
+        btn.innerText='Copied';
+        setTimeout(()=>btn.innerText='Copy',1400);
+      }).catch(()=> {
+        alert('Copy failed — select & copy manually');
+      });
+    });
+  });
+</script>
+</body>
+</html>
+

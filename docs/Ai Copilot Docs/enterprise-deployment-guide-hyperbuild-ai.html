@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Enterprise Deployment Guide — HyperBuild AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { background:#020617; color:#e5e7eb; font-family:Inter; padding:56px; line-height:2; }
+section { background:#000814; border:1px solid #1f2937; border-radius:22px; padding:48px; margin-bottom:90px; }
+h1,h2,h3 { color:#22c55e; }
+.logic { border-left:6px solid #22c55e; padding:26px; margin:30px 0; }
+pre { background:#020617; padding:26px; border-radius:16px; }
+ul { margin-left:32px; }
+</style>
+</head>
+
+<body>
+
+<h1>Enterprise Deployment Guide</h1>
+<p><strong>System:</strong> HyperBuild AI</p>
+
+<section>
+<h2>1. Supported Deployment Models</h2>
+<ul>
+<li>Fully On-Prem</li>
+<li>Private Cloud (VPC)</li>
+<li>Hybrid</li>
+</ul>
+</section>
+
+<section>
+<h2>2. Core Components</h2>
+<pre><code>AI Orchestration Core
+Admin AI
+Execution Workers
+Audit & Logging
+IDE Gateway</code></pre>
+</section>
+
+<section>
+<h2>3. On-Prem Deployment</h2>
+<ul>
+<li>Docker / Kubernetes</li>
+<li>Internal LLMs or approved providers</li>
+<li>No outbound internet by default</li>
+</ul>
+</section>
+
+<section>
+<h2>4. Cloud Deployment</h2>
+<ul>
+<li>Isolated VPC</li>
+<li>Private endpoints</li>
+<li>Secrets managed by KMS</li>
+</ul>
+</section>
+
+<section>
+<h2>5. Operational Controls</h2>
+<div class="logic">
+<ul>
+<li>RBAC for users</li>
+<li>Environment separation</li>
+<li>Centralized logging</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>6. Deployment Recommendation</h2>
+<div class="logic truth">
+<p>
+Begin with a non-production pilot,
+Admin AI enabled, execution restricted.
+</p>
+</div>
+</section>
+
+<footer>
+<p>Enterprise Deployment Guide · HyperBuild AI</p>
+</footer>
+
+</body>
+</html>
+

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CloudxDevAI — Master Documentation Index</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CloudxDevAI full documentation hub. Architecture, DevOps, AI agent lifecycle, CI/CD, Kubernetes, Replit-style agent system." />
+  <style>
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #0b0f19;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #1f2933, #020617);
+      padding: 40px;
+      border-bottom: 1px solid #1f2937;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 36px;
+    }
+    header p {
+      margin-top: 10px;
+      max-width: 900px;
+      color: #9ca3af;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      background: #020617;
+      border-bottom: 1px solid #1f2937;
+      padding: 12px 24px;
+      z-index: 10;
+    }
+    nav a {
+      color: #93c5fd;
+      margin-right: 18px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    section {
+      padding: 40px;
+      max-width: 1200px;
+      margin: auto;
+      border-bottom: 1px solid #111827;
+    }
+    h2 {
+      color: #60a5fa;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 6px;
+    }
+    h3 {
+      color: #93c5fd;
+    }
+    code, pre {
+      background: #020617;
+      color: #e5e7eb;
+      padding: 12px;
+      display: block;
+      overflow-x: auto;
+      border-radius: 6px;
+      border: 1px solid #1f2937;
+      margin: 12px 0;
+    }
+    ul li {
+      margin-bottom: 6px;
+    }
+    footer {
+      padding: 40px;
+      text-align: center;
+      color: #6b7280;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>CloudxDevAI — Master Documentation</h1>
+  <p>
+    This document is the canonical, source-of-truth documentation for the
+    CloudxDevAI system — a Replit-Agent-class AI development platform.
+    It follows max-logic: Parse → Cross-reference → Infer → Test → Reconstruct → Validate → Output.
+  </p>
+</header>
+
+<nav>
+  <a href="#overview">Overview</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#directory-map">Directory Map</a>
+  <a href="#installers">Installers</a>
+  <a href="#devops">DevOps</a>
+  <a href="#ci-cd">CI/CD</a>
+  <a href="#kubernetes">Kubernetes</a>
+  <a href="#ai-agent">AI Agent</a>
+  <a href="#ui">UI & Permissions</a>
+  <a href="#testing">Testing</a>
+  <a href="#migration">Migration</a>
+  <a href="#troubleshooting">Troubleshooting</a>
+</nav>
+
+<section id="overview">
+  <h2>1. Executive Overview</h2>
+  <p>
+    CloudxDevAI is a multi-tenant, project-isolated AI development system designed
+    to replicate and extend Replit Agent functionality:
+  </p>
+  <ul>
+    <li>Per-user isolated projects</li>
+    <li>Upload existing code or generate new projects by prompt</li>
+    <li>AI-driven analysis, repair, refactor, and deployment</li>
+    <li>Local, VM, Docker, and Kubernetes execution</li>
+    <li>Enterprise-grade DevOps and CI/CD</li>
+  </ul>
+</section>
+
+<section id="architecture">
+  <h2>2. System Architecture (Macro)</h2>
+  <pre>
+User
+ └── Web UI (React / Dashboard)
+     ├── Project Workspace
+     ├── File Upload / Editor
+     ├── Prompt Interface
+     └── Admin Console
+          └── Permissions / Quotas
+               ↓
+Backend API (Flask / FastAPI)
+ ├── Auth & RBAC
+ ├── Project Manager
+ ├── File System Isolation
+ ├── AI Orchestrator
+ │    ├── Parse
+ │    ├── Cross-reference
+ │    ├── Infer
+ │    ├── Test
+ │    ├── Reconstruct
+ │    └── Validate
+ └── Job Queue (RQ / Celery)
+      ↓
+Execution Layer
+ ├── Local Runner
+ ├── Docker Runner
+ └── Kubernetes Runner
+  </pre>
+</section>
+
+<section id="directory-map">
+  <h2>3. Repository Directory Map</h2>
+  <pre>
+AiCloudxAgent/
+├── ai-agent/
+│   ├── dashboard/        → Web backend
+│   ├── worker/           → Async job workers
+│   ├── modules/          → Shared logic (healthcheck, logging)
+│   ├── deploy/           → systemd, nginx, prometheus
+│   └── scripts/
+├── devops/
+│   ├── helm/
+│   │   └── aiagent/
+│   ├── systemd/
+│   ├── tools/
+│   ├── smoke_tests/
+│   └── ci/
+├── cloud-provisioners/
+│   ├── aws/
+│   ├── gcp/
+│   └── digitalocean/
+├── .github/workflows/
+│   ├── ci.yml
+│   ├── ci-smoke.yml
+│   ├── build-zip-and-test.yml
+│   └── cd-helm-deploy.yml
+├── installers/
+│   ├── installer_master.sh
+│   ├── installer_local.sh
+│   └── installer_kube.sh
+└── docs/
+    └── index.html (this file)
+  </pre>
+</section>
+
+<section id="installers">
+  <h2>4. Installer System</h2>
+  <ul>
+    <li><strong>installer_master.sh</strong> — orchestrator (local + kube)</li>
+    <li><strong>installer_local.sh</strong> — systemd-based install</li>
+    <li><strong>installer_kube.sh</strong> — Kubernetes / Helm only</li>
+  </ul>
+  <p>All installers standardize on:</p>
+  <pre>/opt/ai-agent</pre>
+</section>
+
+<section id="devops">
+  <h2>5. DevOps Tooling</h2>
+  <ul>
+    <li>Unified healthcheck.sh (merged)</li>
+    <li>Smoke tests (HTTP, imports, docker, kube)</li>
+    <li>Upgrade / Uninstall / Doctor scripts</li>
+    <li>Emergency repair tooling</li>
+  </ul>
+</section>
+
+<section id="ci-cd">
+  <h2>6. CI/CD Pipelines</h2>
+  <ul>
+    <li><code>.github/workflows/ci.yml</code> — lint + unit tests</li>
+    <li><code>ci-smoke.yml</code> — smoke tests</li>
+    <li><code>build-zip-and-test.yml</code> — distributable builds</li>
+    <li><code>cd-helm-deploy.yml</code> — production deploy</li>
+  </ul>
+</section>
+
+<section id="kubernetes">
+  <h2>7. Kubernetes & Helm</h2>
+  <p>Canonical chart location:</p>
+  <pre>devops/helm/aiagent</pre>
+  <ul>
+    <li>Ingress + TLS</li>
+    <li>Redis</li>
+    <li>Horizontal scaling</li>
+    <li>Probes & healthchecks</li>
+  </ul>
+</section>
+
+<section id="ai-agent">
+  <h2>8. AI Agent Logic (Replit-Class)</h2>
+  <pre>
+Input →
+Parse context →
+Cross-reference known structures →
+Infer missing relations →
+Test for contradictions →
+Reconstruct explanation or code →
+Validate coherence →
+Output
+  </pre>
+  <p>
+    This loop is enforced in:
+    <ul>
+      <li>Code analysis</li>
+      <li>Refactoring</li>
+      <li>Bug fixing</li>
+      <li>Project generation</li>
+    </ul>
+  </p>
+</section>
+
+<section id="ui">
+  <h2>9. UI, Users & Permissions</h2>
+  <ul>
+    <li>User dashboard (projects, prompts, files)</li>
+    <li>Admin dashboard (users, quotas, policies)</li>
+    <li>RBAC: user / admin / system</li>
+    <li>Project isolation (filesystem + execution)</li>
+  </ul>
+</section>
+
+<section id="testing">
+  <h2>10. Testing & Validation</h2>
+  <ul>
+    <li>Unit tests</li>
+    <li>Smoke tests</li>
+    <li>Post-deploy verification</li>
+    <li>Rollback validation</li>
+  </ul>
+</section>
+
+<section id="migration">
+  <h2>11. Migration & Upgrade Strategy</h2>
+  <ul>
+    <li>Path normalization</li>
+    <li>Installer consolidation</li>
+    <li>Helm chart unification</li>
+    <li>Backward compatibility</li>
+  </ul>
+</section>
+
+<section id="troubleshooting">
+  <h2>12. Troubleshooting Index</h2>
+  <ul>
+    <li>Installer failures</li>
+    <li>Service not starting</li>
+    <li>Kubernetes pods failing</li>
+    <li>CI failures</li>
+    <li>AI agent incorrect output</li>
+  </ul>
+</section>
+
+<footer>
+  CloudxDevAI Documentation — Canonical Index  
+  <br/>
+  Max-Logic · No Contradictions · Truth Only
+</footer>
+
+</body>
+</html>
+

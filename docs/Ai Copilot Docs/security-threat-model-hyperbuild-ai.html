@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Security Threat Model — HyperBuild AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { background:#020617; color:#e5e7eb; font-family:Inter,system-ui; padding:56px; line-height:2; }
+section { background:#000814; border:1px solid #1f2937; border-radius:22px; padding:48px; margin-bottom:90px; }
+h1,h2,h3 { color:#22c55e; }
+.logic { border-left:6px solid #22c55e; padding:26px; margin:30px 0; }
+.fail { border-left-color:#ef4444; }
+.truth { border-left-color:#4ade80; }
+pre { background:#020617; padding:26px; border-radius:16px; }
+ul { margin-left:32px; }
+</style>
+</head>
+
+<body>
+
+<h1>Security Threat Model</h1>
+<p><strong>Methodology:</strong> STRIDE + Zero Trust  
+<br><strong>System:</strong> HyperBuild AI</p>
+
+<section>
+<h2>1. Security Philosophy</h2>
+<div class="logic truth">
+<p>
+AI is treated as an untrusted actor by default.  
+Trust is earned through policy, not capability.
+</p>
+</div>
+</section>
+
+<section>
+<h2>2. Assets to Protect</h2>
+<ul>
+<li>Source code</li>
+<li>Infrastructure credentials</li>
+<li>Production environments</li>
+<li>Audit logs</li>
+<li>Human authority</li>
+</ul>
+</section>
+
+<section>
+<h2>3. STRIDE Analysis</h2>
+
+<h3>S — Spoofing</h3>
+<ul>
+<li>Risk: AI impersonating user intent</li>
+<li>Mitigation: Explicit Canonical Context Object</li>
+</ul>
+
+<h3>T — Tampering</h3>
+<ul>
+<li>Risk: Unauthorized code modification</li>
+<li>Mitigation: Immutable input + diff approval</li>
+</ul>
+
+<h3>R — Repudiation</h3>
+<ul>
+<li>Risk: Denying responsibility</li>
+<li>Mitigation: Signed audit trails</li>
+</ul>
+
+<h3>I — Information Disclosure</h3>
+<ul>
+<li>Risk: Data leakage</li>
+<li>Mitigation: Least-privilege access</li>
+</ul>
+
+<h3>D — Denial of Service</h3>
+<ul>
+<li>Risk: AI runaway execution</li>
+<li>Mitigation: Rate limits + execution caps</li>
+</ul>
+
+<h3>E — Elevation of Privilege</h3>
+<ul>
+<li>Risk: AI acting as admin</li>
+<li>Mitigation: Admin AI + human approval</li>
+</ul>
+</section>
+
+<section>
+<h2>4. Zero Trust Enforcement</h2>
+<div class="logic">
+<ul>
+<li>No implicit trust between components</li>
+<li>Every action validated by rules</li>
+<li>Every execution logged</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>5. Security Verdict</h2>
+<div class="logic truth">
+<p>
+HyperBuild AI meets enterprise security expectations
+when Admin AI governance is enabled.
+</p>
+</div>
+</section>
+
+<footer>
+<p>Security Threat Model · HyperBuild AI · Truth-Only</p>
+</footer>
+
+</body>
+</html>
+

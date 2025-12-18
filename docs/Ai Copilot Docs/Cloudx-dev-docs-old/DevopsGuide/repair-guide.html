@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Repair Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1220; --card:#0f1c32; --muted:#8fa5bd; --accent:#7ef0ff; --text:#e6eef6;
+  --success:#00ffa3; --warn:#ffb300; --danger:#ff4c4c;
+  --maxw:1100px;
+}
+body{font-family:Inter,Segoe UI,Roboto,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0}
+.container{max-width:var(--maxw);margin:28px auto;padding:28px;background:var(--card);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+h1{color:var(--accent);margin:0 0 8px 0}
+h2{color:#9ce4ff;margin-top:20px}
+a{color:var(--accent);text-decoration:none}
+.topnav{display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
+pre{background:#081019;padding:12px;border-radius:8px;overflow:auto;color:#d1e5ff}
+footer{margin-top:22px;color:var(--muted);font-size:14px}
+ul{margin-left:20px}
+.notice{padding:10px;border-radius:6px;margin:12px 0}
+.notice.ok{background:rgba(0,255,163,0.06);border-left:4px solid var(--success)}
+.notice.warn{background:rgba(255,179,0,0.06);border-left:4px solid var(--warn)}
+.notice.crit{background:rgba(255,76,76,0.06);border-left:4px solid var(--danger)}
+.navcol{display:flex;gap:8px;flex-wrap:wrap}
+.small{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topnav small navcol">
+    <a href="index.html">Home</a>
+    <a href="install-guide.html">Install Guide</a>
+    <a href="helm-guide.html">Helm & K8s</a>
+    <a href="ci-guide.html">CI / CD</a>
+    <a href="troubleshooting.html">Troubleshooting</a>
+    <a href="repair-guide.html">Emergency Repair</a>
+    <a href="devops-reference.html">DevOps Reference</a>
+    <a href="operators-runbook.html">Operator Runbook</a>
+    <a href="faq.html">FAQ</a>
+  </div>
+  <h1>Repair Guide</h1>
+  
+<h2>Repair entry points</h2>
+<ol>
+  <li>Run <code>installer_master.sh --auto-repair</code></li>
+  <li>If systemd broken: <pre>sudo tools/dpkg-emergency-repair.sh</pre></li>
+  <li>Rebuild venv: <pre>python3 -m venv /opt/ai-agent/venv && /opt/ai-agent/venv/bin/pip install -r /opt/ai-agent/requirements.txt</pre></li>
+  <li>Restore from backup in /var/backups/</li>
+</ol>
+
+  <footer>Generated docs bundle — AI-Agent DevOps Suite — v1</footer>
+</div>
+</body>
+</html>

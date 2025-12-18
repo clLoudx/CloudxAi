@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from .api.v1.routers.health import router as health_router
 from .api.v1.routers.auth import router as auth_router
 from .api.v1.routers.users import router as users_router
+from .api.v1.routers.ai import router as ai_router
 from .core.config import get_settings
 from .core.logging import CorrelationIdMiddleware, get_logger, setup_logging
 from .core.redis_client import redis_client
@@ -40,10 +41,28 @@ async def lifespan(app: FastAPI):
         logger.error("Failed to create database tables", error=str(e))
         raise
 
+    # Startup: Initialize AI System Controller
+    try:
+        from .ai.controller import controller
+        await controller.start()
+        logger.info("AI System Controller started successfully")
+    except Exception as e:
+        logger.error("Failed to start AI System Controller", error=str(e))
+        raise
+
     yield
 
     # Shutdown: Cleanup resources
     logger.info("Shutting down AI-Cloudx Agent")
+
+    # Shutdown: Stop AI System Controller
+    try:
+        from .ai.controller import controller
+        await controller.stop()
+        logger.info("AI System Controller stopped successfully")
+    except Exception as e:
+        logger.error("Error stopping AI System Controller", error=str(e))
+
     await redis_client.close()
 
 
@@ -110,6 +129,11 @@ app.include_router(
     users_router,
     prefix="/api/v1",
     tags=["Users"],
+)
+app.include_router(
+    ai_router,
+    prefix="/api/v1/ai",
+    tags=["AI"],
 )
 
 

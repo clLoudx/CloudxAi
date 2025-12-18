@@ -1,0 +1,122 @@
+name: AiAgent CI/CD (Max-Logic Mode)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NON_INTERACTIVE: "yes"
+  FORCE_COLOR: "1"
+  CI: "true"
+
+jobs:
+  build-test-smoke:
+    name: "01 • Build • Test • Smoke (Max-Logic)"
+    runs-on: ubuntu-latest
+
+    steps:
+    # ------------------------------
+    # Checkout code
+    # ------------------------------
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # ------------------------------
+    # Map your custom folder → .github/workflows
+    # (GitHub requires .github/workflows internally)
+    # ------------------------------
+    - name: Apply workflow mapping
+      run: |
+        mkdir -p .github/workflows
+        cp -r github_actions/workflows/* .github/workflows/
+
+    # ------------------------------
+    # Install dependencies
+    # ------------------------------
+    - name: Install system deps
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y unzip jq curl bash git docker.io helm kubectl
+
+    # ------------------------------
+    # Validate bash syntax
+    # ------------------------------
+    - name: Validate script syntax
+      run: |
+        find ai-agent/ -name "*.sh" -print0 | while IFS= read -r -d '' f; do
+          bash -n "$f"
+        done
+
+    # ------------------------------
+    # Unit tests (modules)
+    # ------------------------------
+    - name: Run self-tests (ui, helpers, healthcheck)
+      run: |
+        bash ai-agent/modules/ui.sh || true
+        bash ai-agent/modules/installer_helpers.sh || true
+        bash ai-agent/modules/healthcheck.sh || true
+
+    # ------------------------------
+    # Build release ZIP
+    # ------------------------------
+    - name: Build release ZIP (deterministic)
+      run: |
+        chmod +x build_release_zip.sh
+        ./build_release_zip.sh
+      shell: bash
+
+    # ------------------------------
+    # Verify ZIP is created
+    # ------------------------------
+    - name: Check ZIP
+      run: |
+        ls -l aiagent_release_*.zip
+
+    # ------------------------------
+    # Install from ZIP into /opt/ci-aiagent
+    # ------------------------------
+    - name: Deploy from ZIP → /opt/ci-aiagent
+      run: |
+        sudo bash deploy_from_zip.sh aiagent_release_*.zip \
+            --target /opt/ci-aiagent \
+            --non-interactive
+
+    # ------------------------------
+    # Smoke Test (local)
+    # ------------------------------
+    - name: Smoke test
+      run: |
+        if [ -f "/opt/ci-aiagent/devops/tools/post_deploy_smoke.sh" ]; then
+          /opt/ci-aiagent/devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 60
+        else
+          curl -fsS http://127.0.0.1:8000/healthz
+        fi
+
+  # ------------------------------------------
+  # RELEASE JOB (runs only on main)
+  # ------------------------------------------
+  release:
+    name: "02 • Publish Release ZIP"
+    needs: build-test-smoke
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Bring ZIP from previous job
+      uses: actions/download-artifact@v4
+
+    - name: Publish Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "v1-${{ github.run_number }}"
+        name: "AiAgent v1.${{ github.run_number }}"
+        files: aiagent_release_*.zip
+

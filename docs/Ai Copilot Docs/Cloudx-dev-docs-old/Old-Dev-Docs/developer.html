@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Developer Guide</title><link rel="stylesheet" href="styles.css"></head><body>
+<header class="container"><h1>Developer Guide & Enhancements</h1></header>
+<div class="layout container">
+<aside class="sidebar"><h3>Topics</h3><ul><li>Adapter</li><li>Queue</li><li>UI</li><li>CI/CD</li></ul></aside>
+<main class="content">
+<section class="card"><h2>Adapter improvements</h2>
+<p>Use <code>tiktoken</code> to compute token counts precisely. Wrap OpenAI calls with retry/backoff, timeout, and cost accounting.</p>
+<pre>
+# summary pseudocode
+def call_openai(messages):
+  if not is_safe(messages): return blocked
+  try:
+    r = requests.post(...)
+    record tokens from r['usage']
+  except: fallback to mock
+</pre>
+</section>
+<section class="card"><h2>Queue & DLQ</h2>
+<p>Switch to RQ fully for production. Use job.meta to store provenance and implement exponential backoff with max retries.</p>
+</section>
+<section class="card"><h2>Testing</h2>
+<p>Use pytest and create fixtures to mock adapter calls. Add CI pipeline to run tests and lint on PRs.</p>
+</section>
+</main></div><footer class="footer">Follow the roadmap in the Dev Map to plan sprints.</footer><script src="scripts.js"></script></body></html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 4 — Inference & Gap Analysis Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 32px;
+    }
+    h1, h2, h3 {
+      color: #58a6ff;
+    }
+    h1 {
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 12px;
+    }
+    section {
+      margin-bottom: 48px;
+    }
+    pre {
+      background: #161b22;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    code {
+      color: #d2a8ff;
+    }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning {
+      color: #ff7b72;
+      font-weight: bold;
+    }
+    .truth {
+      color: #7ee787;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>STEP 4 — Inference & Gap Analysis Engine</h1>
+<p class="truth">Max-Logic • Truth-Only • No Assumptions</p>
+
+<section>
+  <h2>1. Position in the Reasoning Pipeline</h2>
+  <pre><code>STEP 1 → Intent (What is wanted?)
+STEP 2 → Context (What exists?)
+STEP 3 → Cross-Reference (Is it structurally valid?)
+STEP 4 → Inference & Gaps (What is missing or implied?)</code></pre>
+  <p>
+    STEP 4 is the bridge between understanding and planning.
+    It infers only what is logically unavoidable and exposes every gap explicitly.
+  </p>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">Most AI errors come from silent assumptions.</p>
+    <p>
+      STEP 4 exists to surface all missing information before execution planning begins.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Inputs</h2>
+  <pre><code>Inputs:
+- Structured Intent (STEP 1)
+- Context Snapshot (STEP 2)
+- CrossReferenceReport (STEP 3)</code></pre>
+</section>
+
+<section>
+  <h2>4. What Inference Means (Strict Definition)</h2>
+  <p>
+    Inference is not guessing.
+    It is deriving unavoidable implications from verified facts.
+  </p>
+  <ul>
+    <li>If X is required and X does not exist → gap</li>
+    <li>If Y exists but contradicts intent → constraint</li>
+    <li>If Z is implied but unverified → uncertainty</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Internal Architecture</h2>
+  <pre><code>Inference & Gap Engine
+ ├─ Requirement Extractor
+ ├─ Dependency Inferencer
+ ├─ Missing Capability Detector
+ ├─ Uncertainty Mapper
+ └─ Risk Escalator</code></pre>
+</section>
+
+<section>
+  <h2>6. Gap Detection</h2>
+  <p>
+    Gaps represent elements required for success that are not present in the system.
+  </p>
+  <pre><code>Examples:
+- No test framework but tests required
+- No CI but deployment implied
+- No error handling but reliability required</code></pre>
+</section>
+
+<section>
+  <h2>7. Inferred Requirements</h2>
+  <p>
+    These are requirements not explicitly requested but logically necessary.
+  </p>
+  <ul>
+    <li>Logging for debugging</li>
+    <li>Configuration separation</li>
+    <li>Rollback or safety mechanisms</li>
+  </ul>
+  <p class="warning">Inferred requirements are marked, never silently applied.</p>
+</section>
+
+<section>
+  <h2>8. Uncertainty Mapping</h2>
+  <pre><code>Uncertainty Levels:
+- Low: Minor clarification
+- Medium: Execution choices affected
+- High: Execution blocked</code></pre>
+  <p>
+    High uncertainty forces a stop or a clarification request.
+  </p>
+</section>
+
+<section>
+  <h2>9. Risk Escalation</h2>
+  <p>
+    If gaps intersect with high-risk intent areas,
+    execution constraints are escalated automatically.
+  </p>
+  <pre><code>Risk Escalation Rules:
+- Gap + High-Risk Intent → Block
+- Gap + Medium Risk → Constrain
+- Gap + Low Risk → Warn</code></pre>
+</section>
+
+<section>
+  <h2>10. Output Structure</h2>
+  <pre><code>InferenceReport {
+  inferred_requirements: string[]
+  missing_capabilities: string[]
+  uncertainties: string[]
+  blocking_gaps: string[]
+  adjusted_risk_level: low | medium | high
+}</code></pre>
+</section>
+
+<section>
+  <h2>11. Validation Rules</h2>
+  <div class="box">
+    <ul>
+      <li>No hidden assumptions</li>
+      <li>No execution with blocking gaps</li>
+      <li>All inferred data must be traceable</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>12. Output Guarantee</h2>
+  <p class="truth">
+    After STEP 4, nothing critical is unknown, hidden, or silently assumed.
+  </p>
+  <p>
+    The system now knows exactly what it can and cannot plan.
+  </p>
+</section>
+
+<section>
+  <h2>13. Handoff to STEP 5</h2>
+  <pre><code>STEP 4 Output → InferenceReport
+        ↓
+STEP 5 Input → Planner Agent</code></pre>
+</section>
+
+</body>
+</html>
+

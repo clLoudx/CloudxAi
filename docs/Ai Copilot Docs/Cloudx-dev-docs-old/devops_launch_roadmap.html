@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Agent — Launch Roadmap & Engineering Playbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --muted:#9aa7bf; --accent:#60a5fa;
+    --success:#16a34a; --danger:#ef4444; --glass: rgba(255,255,255,0.03);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: dark;
+  }
+  html,body{height:100%; margin:0; background:linear-gradient(180deg,#071028 0%, #071a2b 100%); color:#e6eef8;}
+  .wrap{max-width:1100px;margin:28px auto;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.7);}
+  header{display:flex;align-items:center;gap:16px}
+  header h1{margin:0;font-size:20px;letter-spacing:0.2px}
+  header p{margin:0;color:var(--muted);font-size:13px}
+  nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+  .nav-link{background:var(--glass); padding:8px 12px;border-radius:8px;color:var(--accent);cursor:pointer;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,0.02)}
+  .grid{display:grid;grid-template-columns: 1fr 340px; gap:20px}
+  aside{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent); padding:18px;border-radius:10px; border:1px solid rgba(255,255,255,0.03)}
+  article{padding:8px 4px}
+  section{margin-bottom:20px;padding:18px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.002)); border:1px solid rgba(255,255,255,0.02)}
+  h2{margin:0 0 8px 0;font-size:16px}
+  h3{margin:8px 0;font-size:14px;color:#cfe6ff}
+  p.lead{color:var(--muted);margin:0 0 12px 0;font-size:13px}
+  ol.checklist{counter-reset:item; padding-left:18px; margin:0}
+  ol.checklist li{margin:8px 0; padding-left:8px}
+  .item-title{font-weight:600}
+  code, pre{background:rgba(255,255,255,0.02); padding:6px 8px;border-radius:6px;color:#dbeafe; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:13px}
+  pre{overflow:auto; padding:12px}
+  .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:12px;color:var(--muted)}
+  .success{color:var(--success); font-weight:700}
+  .danger{color:var(--danger);font-weight:700}
+  .muted{color:var(--muted)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr; gap:12px}
+  footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+  details{background:rgba(255,255,255,0.01); padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+  .cmd{display:block;margin:6px 0;padding:8px;border-radius:8px;background:#062235;border-left:3px solid var(--accent)}
+  .metric{display:flex;gap:8px;align-items:center}
+  .metric span.name{min-width:200px;color:var(--muted)}
+  .metric span.value{font-weight:700;color:#dbeafe}
+  .toc{font-size:13px}
+  .big-num{font-size:34px;font-weight:800;color:var(--accent)}
+  .hl{background:linear-gradient(90deg, rgba(96,165,250,0.08), rgba(96,165,250,0.02)); padding:6px;border-radius:8px;border:1px solid rgba(96,165,250,0.06)}
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} aside{order:2} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7dd3fc);display:flex;align-items:center;justify-content:center;font-weight:800;color:#04263b">AI</div>
+    <div>
+      <h1>AI Agent — Launch Roadmap & Engineering Playbook</h1>
+      <p class="muted">Complete single-page reference: Launch Checklist, Migration Plan, Reliability Hardening, Replit-Agent compatibility, and Benchmarks — max-logic, production-focused.</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-link" onclick="document.getElementById('checklist').scrollIntoView()">Launch Checklist</div>
+    <div class="nav-link" onclick="document.getElementById('migration').scrollIntoView()">Staging → Production</div>
+    <div class="nav-link" onclick="document.getElementById('hardening').scrollIntoView()">Reliability Hardening</div>
+    <div class="nav-link" onclick="document.getElementById('replit').scrollIntoView()">Replit-Agent Compatibility</div>
+    <div class="nav-link" onclick="document.getElementById('bench').scrollIntoView()">Performance Benchmarks</div>
+    <div class="nav-link" onclick="window.print()">Print / Save PDF</div>
+  </nav>
+
+  <div class="grid">
+    <article>
+      <!-- Launch Checklist -->
+      <section id="checklist" aria-labelledby="checklist-h">
+        <h2 id="checklist-h">Launch Checklist — 60 items (Practical, ordered)</h2>
+        <p class="lead">This checklist is ordered: preflight → infra → security → deployment → validation → runbooks. Check each item and mark done.</p>
+
+        <ol class="checklist">
+          <!-- Group 1: Preflight (1-10) -->
+          <li><span class="item-title">Preflight: System baseline</span>
+            <div class="muted">1–4: OS & resources</div>
+            <ol>
+              <li>1. Confirm OS image & package base (Ubuntu LTS 22.04/24.04 or Debian stable). <code>lsb_release -a</code></li>
+              <li>2. Verify disk and inode availability (≥ 25GB free recommended). <code>df -h / && df -i /</code></li>
+              <li>3. Validate network outbound & DNS: ping GitHub, Docker registry. <code>curl -fsSL https://api.github.com</code></li>
+              <li>4. Time sync / NTP working. <code>timedatectl status</code></li>
+            </ol>
+          </li>
+
+          <li><span class="item-title">Preflight: Tools</span>
+            <div class="muted">5–10: CLI & auth</div>
+            <ol>
+              <li>5. Ensure apt, curl, wget, git, jq available. <code>apt-get update && apt-get install -y git curl jq</code></li>
+              <li>6. Docker (if using local containers) present and running. <code>docker version</code></li>
+              <li>7. Kubernetes tools for kube mode: kubectl & helm installed. <code>kubectl version --client && helm version</code></li>
+              <li>8. Create service account and key rotation plan for cloud resources.</li>
+              <li>9. Secrets engine decided (Vault/SSM/Secrets Manager) and accessible from CI.</li>
+              <li>10. Create admin and limited operator accounts (RBAC) for staging/prod.</li>
+            </ol>
+          </li>
+
+          <!-- Group 2: Infrastructure (11-25) -->
+          <li><span class="item-title">Infrastructure: Cluster & Services</span>
+            <div class="muted">11–15: Cluster & ingress</div>
+            <ol>
+              <li>11. Provision K8s cluster (managed or self-hosted) with node pools for web/worker. (2+ node pools)</li>
+              <li>12. Install ingress-nginx controller (Helm or manifest). <code>helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx</code></li>
+              <li>13. Install cert-manager and register ClusterIssuer for Let's Encrypt (staging then prod).</li>
+              <li>14. Deploy Redis (cluster or managed) with persistence and backup plan.</li>
+              <li>15. Setup container registry and imagePullSecrets for private images.</li>
+            </ol>
+          </li>
+
+          <li><span class="item-title">Infrastructure: Observability & Backups</span>
+            <div class="muted">16–20: monitoring</div>
+            <ol>
+              <li>16. Prometheus scraping configured for app metrics and node exporters.</li>
+              <li>17. Grafana dashboards installed and the ai-agent dashboards loaded.</li>
+              <li>18. Alerting rules and escalation paths configured in Alertmanager.</li>
+              <li>19. Backup schedule for Redis and persistent volumes documented & tested.</li>
+              <li>20. Centralized logs via Loki/ELK or cloud logging; retention policy defined.</li>
+            </ol>
+          </li>
+
+          <li><span class="item-title">Infrastructure: Security</span>
+            <div class="muted">21–25: security baseline</div>
+            <ol>
+              <li>21. OpenSSL and TLS configuration validated; only modern ciphers permitted.</li>
+              <li>22. Firewall rules: allow only required ports (80/443/ssh) and admin IPs.</li>
+              <li>23. Secrets never in repo; use secret manager + imagePullSecrets injected at runtime.</li>
+              <li>24. Container images scanned for CVEs before deployment (Trivy or similar).</li>
+              <li>25. Minimally privileged service accounts in Kubernetes (no cluster-admin for app services).</li>
+            </ol>
+          </li>
+
+          <!-- Group 3: CI/CD & Artifacts (26-38) -->
+          <li><span class="item-title">CI/CD: Build & artifacts</span>
+            <div class="muted">26–30: CI pipeline</div>
+            <ol>
+              <li>26. CI builds frontend and backend artifacts and runs unit tests (fail-fast).</li>
+              <li>27. Container images are versioned (semver or commit sha) and pushed to registry.</li>
+              <li>28. Build artifacts (zip bundles) are stored in artifact storage with checksums. <code>sha256sum</code></li>
+              <li>29. CI does static analysis (lint, bandit/flake8, type checks) to block PRs when failing.</li>
+              <li>30. Create protected branches and enforce PR checks (required passes before merge).</li>
+            </ol>
+          </li>
+
+          <li><span class="item-title">CI/CD: Deploy & Smoke</span>
+            <div class="muted">31–38: deploy automation</div>
+            <ol>
+              <li>31. Create GitHub Actions workflows for build, ci-smoke, and helm deploy. (See / .github/workflows)</li>
+              <li>32. Add post-deploy smoke tests (HTTP /healthz, readiness, example task run).</li>
+              <li>33. Add canary / blue-green strategy for non-disruptive rollouts (feature gates).</li>
+              <li>34. Ensure helm charts include serviceAccount, imagePullSecrets, probes, resources, HPA metrics.</li>
+              <li>35. Add CI job to run smoke tests and block merge on failures.</li>
+              <li>36. Add CD policy to prevent auto-prod deploys from untrusted branches (use tags or release pipeline).</li>
+              <li>37. Ensure rollback automation exists (helm rollback + re-deploy bundle from artifact).</li>
+              <li>38. Configure CD to run post-deploy health checks and fail the pipeline on critical errors.</li>
+            </ol>
+          </li>
+
+          <!-- Group 4: App readiness & safety (39-50) -->
+          <li><span class="item-title">App readiness & safety</span>
+            <div class="muted">39–44: app readiness</div>
+            <ol>
+              <li>39. Add /healthz and /metrics endpoints to Flask app; ensure consistent 200 for healthy state.</li>
+              <li>40. Implement graceful shutdown (SIGTERM handler; finish inflight requests) in workers/web.</li>
+              <li>41. Validate migrations (DB schema) and run in CI with a disposable DB.</li>
+              <li>42. Create a job to exercise AI agent pipeline (e2e smoke) with mocked prompts.</li>
+              <li>43. Protect heavy endpoints with rate limits and auth tokens; enable API key rotation.</li>
+              <li>44. Ensure secrets like OPENAI_API_KEY are loaded from runtime env only (not baked into images).</li>
+            </ol>
+          </li>
+
+          <li><span class="item-title">Runbooks & Support (51–60)</span>
+            <div class="muted">45–60: runbooks & ops</div>
+            <ol>
+              <li>45. Create runbook: app restart + rollback + cache clear + worker redeploy.</li>
+              <li>46. Create runbook: emergency DB/Redis restore from backup (step-by-step commands).</li>
+              <li>47. Create runbook: rotate imagePullSecrets and env secrets.</li>
+              <li>48. On-call schedule and runbook for alerts (pager duty escalation).</li>
+              <li>49. Create metrics dashboard (SLOs) with thresholds & alerting policies.</li>
+              <li>50. Add load-shedding strategy for overloaded worker queues.</li>
+              <li>51. Document upgrade path and pre-flight checks for each release.</li>
+              <li>52. Pre-create sample load test harness & scripts (k6/locust) for CI gating.</li>
+              <li>53. Provide a reproducible dev environment (docker compose or kind cluster + sample data).</li>
+              <li>54. Document how to extract logs, create bug report, and include core dumps / traces.</li>
+              <li>55. Establish SLOs & error budgets; measure and report weekly.</li>
+              <li>56. Provide a secure channel for reporting security incidents and CVE remediation plan.</li>
+              <li>57. Create a migration plan with canary % and health gates (see Staging→Prod plan).</li>
+              <li>58. Validate backups and retention monthly with a restore test documented in runbook.</li>
+              <li>59. Create a "kill switch" to disable AI agent heavy tasks quickly if safety issue arises.</li>
+              <li>60. Final pre-launch checklist sign-off: infra, ci, security, runbooks, stakeholders.</li>
+            </ol>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Migration Plan -->
+      <section id="migration">
+        <h2>Staging → Production Migration Plan (Layered, Safe)</h2>
+        <p class="lead">Goal: promote validated artifact from staging to production with minimal risk. Use Canary + Health Gates + Auto-Rollback.</p>
+
+        <h3>1) Preconditions</h3>
+        <ol>
+          <li>All CI tests green (unit, integration, lint, security scanning, smoke).</li>
+          <li>Staging deployment passed 24–48 hours of observation with synthetic traffic and real e2e smoke.</li>
+          <li>Backups verified (Redis snapshot & PV backup). Proven restore tested in staging.</li>
+          <li>Runbooks & on-call engaged and aware of the deployment window.</li>
+        </ol>
+
+        <h3>2) Artifact Promotion</h3>
+        <ol>
+          <li>Tag the image: <code>docker tag $IMAGE $REGISTRY/aiagent:$RELEASE_TAG</code> and push.</li>
+          <li>Create a production release entry (release notes, changelog, migration notes).</li>
+          <li>Record the checksum and artifact location in a release manifest.</li>
+        </ol>
+
+        <h3>3) Deployment Strategy (Canary)</h3>
+        <ol>
+          <li>Create a temporary canary subset (10% traffic) using ingress weight or service mesh route.</li>
+          <li>Run health checks for 15–30 minutes: readiness, latency, error rates; check worker queue behavior.</li>
+          <li>If metrics pass, increase to 50% for 30–60 minutes; then 100% if stable.</li>
+          <li>If failures exceed thresholds, trigger an automatic rollback to previous release and escalate to on-call.</li>
+        </ol>
+
+        <h3>4) Post-migration Steps</h3>
+        <ol>
+          <li>Run full e2e smoke tests including a sample AI task. <code>devops/tools/post_deploy_smoke.sh</code></li>
+          <li>Verify data integrity and that no long-running migrations remain.</li>
+          <li>Announce release to stakeholders and update incident channels if needed.</li>
+        </ol>
+
+        <h3>5) Rollback Plan</h3>
+        <ol>
+          <li>Helm: <code>helm rollback aiagent <previous_revision></code></li>
+          <li>If DB schema changed incompatibly, restore DB from snapshot and restore worker state.</li>
+          <li>Run smoke tests to confirm rollback success.</li>
+        </ol>
+      </section>
+
+      <!-- Reliability Hardening -->
+      <section id="hardening">
+        <h2>Reliability Hardening Plan</h2>
+        <p class="lead">Hardening focuses on redundancy, observability, and graceful failure modes.</p>
+
+        <h3>Core Strategies</h3>
+        <div class="two-col">
+          <div>
+            <h4>Redundancy & Autoscaling</h4>
+            <ul>
+              <li>Run at least 2 replicas for web components and 3 for workers (HPA recommended).</li>
+              <li>Define CPU/memory requests & limits; tune HPA target CPU and queue length metrics.</li>
+              <li>Use PodDisruptionBudgets to prevent full outages during upgrades.</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Persistence & Backups</h4>
+            <ul>
+              <li>Use persistent volumes for critical data; snapshot schedule daily with retention.</li>
+              <li>Automate Redis backups and lifecycle with retention and test restores monthly.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Safety & Graceful Degradation</h3>
+        <ul>
+          <li>Implement rate-limiting and circuit breakers for heavy endpoints.</li>
+          <li>Design worker queue prioritization and dead-letter queues (DLQ) for failed tasks.</li>
+          <li>Expose a /healthz that reflects critical subsystems (e.g., redis connectivity).</li>
+          <li>Implement exponential backoff and jitter in retry logic for external calls (OpenAI API, DB).</li>
+        </ul>
+
+        <h3>Observability</h3>
+        <ol>
+          <li>Instrument metrics for: request latency, queue depth, worker success rate, errors, CPU/mem.</li>
+          <li>Set SLOs — e.g., 99.5% availability for API, <100ms median latency for critical endpoints.</li>
+          <li>Define alert thresholds and implement alert routing (PagerDuty or OpsGenie).</li>
+        </ol>
+
+        <h3>Chaos & Recovery Drills</h3>
+        <ul>
+          <li>Run monthly chaos tests: node termination, network partition, disk pressure.</li>
+          <li>Run disaster recovery drills quarterly (restore backups to an isolated cluster).</li>
+        </ul>
+      </section>
+
+      <!-- Replit-Agent Compatibility -->
+      <section id="replit">
+        <h2>Replit-Agent Compatibility Layer (Practical Integration)</h2>
+        <p class="lead">Goal: run the AI Agent within constrained containers/runtimes (like Replit-style sandbox) while preserving safety and isolation.</p>
+
+        <h3>Design Principles</h3>
+        <ul>
+          <li>Stateless web processes; all persistent state in external services (Redis/PV/DB).</li>
+          <li>Limit memory & CPU per process; ensure graceful degradation when resources constrained.</li>
+          <li>Use small base images and multi-stage builds to minimize image size.</li>
+        </ul>
+
+        <h3>Compatibility Checklist & Adapters</h3>
+        <ol>
+          <li><strong>Entrypoint shim</strong>: Add a tiny script that adapts environment variables and optional feature flags for sandbox modes:
+            <pre class="cmd">#!/usr/bin/env bash
+# /usr/local/bin/entrypoint-sandbox.sh
+set -e
+: "${SANDBOX_MODE:=no}"
+if [ "$SANDBOX_MODE" = "yes" ]; then
+  export REDIS_URL=${REDIS_URL:-redis://127.0.0.1:6379/0}
+  export FLASK_ENV=production
+  # reduce worker concurrency
+  export WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-1}
+fi
+exec "$@"
+</pre>
+          </li>
+
+          <li><strong>Resource-aware config:</strong> make concurrency & batch sizes configurable via env (WORKER_CONCURRENCY, BATCH_SIZE).</li>
+
+          <li><strong>Strip heavy dependencies</strong> or provide a "lite" mode for the agent that disables background heavy transformers or replaces them with mocks for the sandbox tests.</li>
+
+          <li><strong>Network egress policy:</strong> sandbox must have whitelisted outbound hosts (OpenAI API, registries) or use a proxy with quotas.</li>
+
+          <li><strong>Runtime assertions:</strong> add a startup check that validates available memory and fails fast with guidance:
+            <pre class="cmd">python - <<'PY'
+import psutil, sys
+mem=psutil.virtual_memory().available/1024/1024
+if mem < 512:
+  print("Insufficient RAM: need >=512MB available")
+  sys.exit(2)
+print("OK")
+PY</pre>
+          </li>
+        </ol>
+
+        <h3>Testing in Replit-like environment</h3>
+        <ol>
+          <li>Run container with strict resource limits (cgroups). Example: <code>docker run --memory=512m --cpus=0.5 ...</code></li>
+          <li>Run a smoke scenario: send a simple prompt, verify worker processes the task and returns a bounded-length output.</li>
+          <li>Measure cold start: record time from container start to first /healthz 200 (optimize image start time).</li>
+        </ol>
+      </section>
+
+      <!-- Performance Benchmark Suite -->
+      <section id="bench">
+        <h2>Performance Benchmark Suite</h2>
+        <p class="lead">A reproducible suite to measure throughput, latency, and resource usage for web and worker components.</p>
+
+        <h3>Goals & KPIs</h3>
+        <ul>
+          <li>Request throughput (RPS) for web endpoints under realistic load.</li>
+          <li>Task processing throughput (tasks/sec) for workers.</li>
+          <li>95th / 99th percentile latencies for critical APIs.</li>
+          <li>Memory & CPU per request/task to enable capacity planning.</li>
+        </ul>
+
+        <h3>Tools</h3>
+        <ul>
+          <li>k6 for HTTP load testing (lightweight, scriptable).</li>
+          <li>locust for task-level simulation if you need Python-based user behavior scripting.</li>
+          <li>Prometheus + Grafana for metric collection; node-exporter for system metrics.</li>
+        </ul>
+
+        <h3>Sample k6 test (HTTP /healthz & /api/respond)</h3>
+        <pre class="cmd">// save as tests/k6_basic_test.js
+import http from 'k6/http';
+import {sleep, check} from 'k6';
+export let options = {
+  vus: 50,
+  duration: '2m',
+  thresholds: {
+    http_req_duration: ['p(95)<500']
+  }
+};
+export default function() {
+  let r1 = http.get('http://ALB_OR_INGRESS/healthz');
+  check(r1, {'health is 200': (r)=> r.status === 200});
+  let payload = JSON.stringify({prompt: "hello"});
+  let r2 = http.post('http://ALB_OR_INGRESS/api/respond', payload, {headers:{'Content-Type':'application/json'}});
+  check(r2, {'respond 200': (r)=> r.status === 200});
+  sleep(0.5);
+}
+</pre>
+
+        <h3>Worker load test (simple loop)</h3>
+        <pre class="cmd">#!/usr/bin/env bash
+# simple worker throughput loop (mock task)
+for i in $(seq 1 1000); do
+  start=$(date +%s%3N)
+  curl -s -X POST http://127.0.0.1:8000/api/task -d '{"prompt":"test"}' -H 'Content-Type:application/json' >/dev/null
+  end=$(date +%s%3N)
+  echo $((end-start))
+done | awk '{sum+=$1; cnt+=1} END {print "avg ms:", sum/cnt, "cnt:",cnt}'
+</pre>
+
+        <h3>Measurement & Reporting</h3>
+        <ol>
+          <li>Collect Prometheus metrics at test time (request durations, task success/failure counts).</li>
+          <li>Record system CPU/memory with <code>node_exporter</code> or <code>psutil</code> snapshot.</li>
+          <li>Create a test report with: TPS, p50/p95/p99 latencies, CPU cores used, memory per pod, and error rate.</li>
+        </ol>
+
+        <h3>Capacity Planning Example</h3>
+        <pre class="cmd"># If one web pod handles 100 RPS within SLO, desired headroom 30%:
+TARGET_RPS=2000
+POD_RPS=100
+NEEDED_PODS=$(( (TARGET_RPS * 130 / 100 + POD_RPS -1) / POD_RPS ))
+echo "Pods needed: $NEEDED_PODS"
+</pre>
+      </section>
+
+      <footer>
+        <div style="margin-bottom:8px" class="muted">Produced by AI Agent DevOps Playbook • Max-Logic Mode</div>
+        <div class="muted">Use this document as a single reference during pre-launch and operations. Keep it versioned with your repo.</div>
+      </footer>
+    </article>
+
+    <aside>
+      <div class="hl" style="padding:12px;border-radius:10px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="muted">Project Readiness</div>
+            <div class="big-num">84%</div>
+            <div class="muted" style="font-size:13px">Estimated overall project health (logic-only assessment)</div>
+          </div>
+          <div style="text-align:right">
+            <div class="muted">Target Launch</div>
+            <div style="font-weight:700">V1 GA</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <h3 style="margin:0 0 6px 0">Quick Actions</h3>
+        <div><button class="nav-link" style="width:100%" onclick="copyChecklist()">Copy checklist to clipboard</button></div>
+        <div style="height:8px"></div>
+        <div><button class="nav-link" style="width:100%" onclick="downloadJSON()">Download Release Manifest (example)</button></div>
+      </div>
+
+      <div>
+        <h3 style="margin:0 0 6px 0">Short Links</h3>
+        <div class="toc">
+          <div><a class="muted" href="#checklist">• Launch Checklist</a></div>
+          <div><a class="muted" href="#migration">• Migration Plan</a></div>
+          <div><a class="muted" href="#hardening">• Hardening</a></div>
+          <div><a class="muted" href="#replit">• Replit Layer</a></div>
+          <div><a class="muted" href="#bench">• Benchmarks</a></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <h3 style="margin:0 0 6px 0">Key Commands (Ops)</h3>
+        <div class="muted">Helm deploy</div>
+        <pre class="cmd">helm upgrade --install aiagent ./devops/helm/aiagent -n aiagent --create-namespace --wait --timeout 10m</pre>
+        <div class="muted">Post-deploy smoke</div>
+        <pre class="cmd">devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 120</pre>
+        <div class="muted">Rollback</div>
+        <pre class="cmd">helm rollback aiagent 2</pre>
+      </div>
+
+      <details style="margin-top:12px">
+        <summary>Release Manifest (example)</summary>
+        <pre style="margin-top:8px">{
+  "release_tag": "v1.0.0",
+  "images": {
+    "web": "registry.example.com/aiagent/web:v1.0.0",
+    "worker": "registry.example.com/aiagent/worker:v1.0.0"
+  },
+  "checksum": "sha256:..."
+}</pre>
+      </details>
+    </aside>
+  </div>
+</div>
+
+<script>
+  function copyChecklist(){
+    const nodes = document.querySelectorAll('#checklist ol.checklist li');
+    let text = 'Launch Checklist:\\n\\n';
+    nodes.forEach((n,i) => {
+      text += (i+1)+'. '+ n.innerText.replace(/\\n\\s+/g,' ').slice(0,200) + '\\n';
+    });
+    navigator.clipboard.writeText(text).then(()=>alert('Checklist copied to clipboard'));
+  }
+  function downloadJSON(){
+    const example = {
+      release_tag: "v1.0.0",
+      images: {
+        web: "registry.example.com/aiagent/web:v1.0.0",
+        worker: "registry.example.com/aiagent/worker:v1.0.0"
+      },
+      checksum: "sha256:..."
+    };
+    const blob = new Blob([JSON.stringify(example, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download='release-manifest.json'; document.body.appendChild(a); a.click(); a.remove();
+  }
+</script>
+</body>
+</html>
+

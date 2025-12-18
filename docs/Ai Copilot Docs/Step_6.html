@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 6 — Architect Agent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 32px;
+    }
+    h1, h2, h3 { color: #58a6ff; }
+    h1 { border-bottom: 1px solid #30363d; padding-bottom: 12px; }
+    section { margin-bottom: 48px; }
+    pre { background: #161b22; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    code { color: #d2a8ff; }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning { color: #ff7b72; font-weight: bold; }
+    .truth { color: #7ee787; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>STEP 6 — Architect Agent</h1>
+<p class="truth">Max-Logic • Architecture Before Code • Deterministic Design</p>
+
+<section>
+  <h2>1. Position in the Execution Pipeline</h2>
+  <pre><code>STEP 1 → Intent Truth
+STEP 2 → Context Snapshot
+STEP 3 → Structural Validation
+STEP 4 → Gaps & Inference
+STEP 5 → Execution Plan
+STEP 6 → Architecture & Code Mapping</code></pre>
+  <p>
+    STEP 6 converts the execution plan into a concrete, enforceable software architecture.
+    No file is created and no code is written yet.
+  </p>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">Code without architecture is technical debt in disguise.</p>
+    <p>
+      The Architect Agent ensures that every future line of code has a justified place
+      within a coherent system design.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Inputs</h2>
+  <pre><code>Inputs:
+- ExecutionPlan (STEP 5)
+- ContextSnapshot (STEP 2)
+- CrossReferenceReport (STEP 3)
+- InferenceReport (STEP 4)</code></pre>
+</section>
+
+<section>
+  <h2>4. What Architecture Means (Strict Definition)</h2>
+  <p>
+    Architecture is the explicit mapping between responsibilities and system boundaries.
+  </p>
+  <ul>
+    <li>Which component owns which responsibility</li>
+    <li>How components communicate</li>
+    <li>Where data flows and is transformed</li>
+    <li>What is allowed and forbidden across boundaries</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Internal Architecture</h2>
+  <pre><code>Architect Agent
+ ├─ Responsibility Mapper
+ ├─ Module Boundary Designer
+ ├─ Interface & Contract Definer
+ ├─ Dependency Rule Enforcer
+ ├─ Change Impact Analyzer
+ └─ Architecture Validator</code></pre>
+</section>
+
+<section>
+  <h2>6. Module & Layer Design</h2>
+  <p>
+    The agent defines or adjusts layers without violating existing constraints.
+  </p>
+  <pre><code>Typical Layers:
+- API / Interface Layer
+- Application / Service Layer
+- Domain / Core Logic
+- Infrastructure / Adapters</code></pre>
+  <p class="warning">No layer mixing is allowed.</p>
+</section>
+
+<section>
+  <h2>7. Interface & Contract Definition</h2>
+  <p>
+    Each interaction is formalized before coding begins.
+  </p>
+  <pre><code>Contract Example:
+- Input schema
+- Output schema
+- Error cases
+- Side effects</code></pre>
+</section>
+
+<section>
+  <h2>8. Dependency Rules</h2>
+  <pre><code>Rules:
+- High-level modules never depend on low-level details
+- Infrastructure depends on core, never the inverse
+- Cyclic dependencies are forbidden</code></pre>
+</section>
+
+<section>
+  <h2>9. Change Impact Analysis</h2>
+  <p>
+    Before any code exists, the agent predicts the blast radius of changes.
+  </p>
+  <ul>
+    <li>Affected modules</li>
+    <li>Backward compatibility risks</li>
+    <li>Testing implications</li>
+  </ul>
+</section>
+
+<section>
+  <h2>10. Output Structure</h2>
+  <pre><code>ArchitectureSpec {
+  components: ComponentSpec[]
+  interfaces: InterfaceSpec[]
+  dependency_rules: string[]
+  file_map: string[]
+  change_risk: low | medium | high
+}</code></pre>
+</section>
+
+<section>
+  <h2>11. Validation Rules</h2>
+  <div class="box">
+    <ul>
+      <li>No component without responsibility</li>
+      <li>No implicit coupling</li>
+      <li>No architecture violating STEP 3 constraints</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>12. Output Guarantee</h2>
+  <p class="truth">
+    After STEP 6, every future line of code has a predefined place,
+    purpose, and boundary.
+  </p>
+</section>
+
+<section>
+  <h2>13. Handoff to STEP 7</h2>
+  <pre><code>STEP 6 Output → ArchitectureSpec
+        ↓
+STEP 7 Input → Executor / Tool Runner</code></pre>
+</section>
+
+</body>
+</html>

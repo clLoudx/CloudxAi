@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Agent — Enhancement Plan & Implementation Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:#0b1220;color:#e6eef6}
+  .container{max-width:1100px;margin:24px auto;padding:28px;background:linear-gradient(#071021, #071625);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  h1{margin:0;font-size:22px}
+  h2{font-size:18px;margin-top:18px}
+  p{color:#bfcfe0}
+  .muted{color:#91a6bd}
+  code{background:rgba(255,255,255,0.03);padding:2px 6px;border-radius:6px}
+  pre{background:#05101a;padding:12px;border-radius:8px;overflow:auto}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+  .panel{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+  .task{margin:8px 0;padding:10px;border-radius:8px;background:linear-gradient(90deg, rgba(6,182,212,0.04), transparent);border:1px solid rgba(6,182,212,0.06)}
+  .prio{font-weight:700;color:#7ef0ff}
+  .ok{color:#6ef07a}
+  .warn{color:#ffd36e}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);text-align:left;color:#a9bfd1}
+  .steps{list-style:none;padding-left:0}
+  .steps li{margin:6px 0}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AI Agent — Enhancement Plan & Implementation Map</h1>
+      <p class="muted">A deterministic, prioritized plan to complete missing options, harden installers, finalize Helm + cert-manager + CI/CD, and ship a production-ready installer bundle.</p>
+    </header>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Executive summary</h2>
+        <p class="muted">We will make the project: safe, idempotent, verifiable, and fully automated for both local systemd installs and Kubernetes Helm production. The plan is split into Inventory → Harden → Implement → Test → Release.</p>
+
+        <h3>Priority quick wins</h3>
+        <ul class="steps">
+          <li><span class="prio">P0</span> — Inventory & fix hardcoded <code>REPO_ROOT</code> usages.</li>
+          <li><span class="prio">P0</span> — Finalize and place modules: <code>ui.sh</code>, <code>healthcheck.sh</code>, <code>installer_helpers.sh</code>.</li>
+          <li><span class="prio">P1</span> — Generate deterministic release ZIP and deploy-from-zip script.</li>
+          <li><span class="prio">P1</span> — Ensure .github/workflows contains CI jobs (zip-build, smoke tests, optionally helm deploy).</li>
+        </ul>
+
+        <h3>Risks & mitigations</h3>
+        <ul class="steps">
+          <li class="muted">apt/dpkg failure — mitigation: emergency repair + wget fallback + mirror rotation</li>
+          <li class="muted">Secrets exposure — mitigation: never commit secrets in charts; use K8s secrets & /etc/ai-agent/env with 600 perms</li>
+          <li class="muted">Cluster differences — mitigation: provide optional values-production.yaml and test harness</li>
+        </ul>
+      </div>
+
+      <aside class="panel">
+        <h3>Artifacts created</h3>
+        <ul>
+          <li>devops/docs/enhancement-plan.html</li>
+          <li>devops/tools/repo_inventory.sh</li>
+          <li>devops/reports/inventory_YYYYMMDD.json</li>
+          <li>devops/helm/aiagent/{Chart.yaml,values-production.yaml,templates/*}</li>
+          <li>dist/aiagent_release_YYYYMMDD_HHMM.zip</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section>
+      <h2>Detailed plan (step-by-step)</h2>
+
+      <h3>Phase A — Inventory & normalization (1 day)</h3>
+      <div class="task">
+        <strong>Task</strong>: Add <code>devops/tools/repo_inventory.sh</code> which scans for required files and reports missing items in JSON.
+        <p class="muted">Why: automated detection lets CI fail early and produce clear actionable outputs for the maintainer.</p>
+        <pre># outputs: devops/reports/inventory_2025-12-11.json
+./devops/tools/repo_inventory.sh --output devops/reports/inventory.json</pre>
+      </div>
+
+      <h3>Phase B — Hardening & helpers (1–2 days)</h3>
+      <div class="task">
+        <strong>Task</strong>: Finalize modules and enforce safe shell patterns.
+        <ul>
+          <li>Place <code>ai-agent/modules/ui.sh</code>, <code>ai-agent/modules/healthcheck.sh</code>, <code>ai-agent/modules/installer_helpers.sh</code>.</li>
+          <li>All scripts must start with <code>set -euo pipefail</code> and proper umask.</li>
+        </ul>
+      </div>
+
+      <h3>Phase C — Bundles & Deploy-from-zip (1 day)</h3>
+      <div class="task">
+        <strong>Task</strong>: Create deterministic release ZIP and safe deployer.
+        <ol>
+          <li>Implement <code>build_release_zip.sh</code> (stable timestamps, reproducible file order).</li>
+          <li>Implement <code>devops/tools/deploy_from_zip.sh</code> which extracts to a tempdir, validates <code>installer.sh</code> inside the archive and rsyncs to target.</li>
+        </ol>
+      </div>
+
+      <h3>Phase D — Helm chart finalization (2 days)</h3>
+      <div class="task">
+        <strong>Task</strong>: Finalize <code>devops/helm/aiagent</code>.
+        <ul>
+          <li>Subcharts: aiagent-web, aiagent-worker, redis (or add dependency to bitnami/redis).</li>
+          <li>Probes: liveness + readiness for /healthz port 8000 (configurable).</li>
+          <li>Ingress template with cert-manager annotation & option for loadBalancer / nginx ingress class.</li>
+          <li>CRD for cert-manager in <code>crds/</code> or reference cluster-level CRD installation instructions.</li>
+        </ul>
+      </div>
+
+      <h3>Phase E — CI/CD (2 days)</h3>
+      <div class="task">
+        <strong>Task</strong>: Add GitHub Actions workflows:
+        <ul>
+          <li><code>build-zip-and-test.yml</code> — produce artifact & run smoke tests in ephemeral environment.</li>
+          <li><code>ci-smoke.yml</code> — run smoke tests against deployed test cluster.</li>
+          <li><code>helm-deploy.yml</code> — optional CD job using environment secrets.</li>
+        </ul>
+      </div>
+
+      <h3>Phase F — Repair & Observability (1–2 days)</h3>
+      <div class="task">
+        <strong>Task</strong>: Harden <code>tools/emergency-total-repair.sh</code>, implement <code>doctor.sh</code> and integrate Prometheus scrape config + Grafana dashboards.
+      </div>
+
+      <h3>Phase G — Docs & onboarding (ongoing)</h3>
+      <div class="task">
+        <strong>Task</strong>: produce per-topic HTML pages and link from a central docs index (this file).
+        <ul>
+          <li>Create `devops/docs/{install-guide,k8s-deploy-guide,ci-cd,...}.html`</li>
+          <li>Provide printable PDF versions for operator runbooks</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Concrete code snippets & patterns (safe, copy/paste)</h2>
+
+      <h3>Normalized REPO_ROOT pattern (use in top-level scripts)</h3>
+      <pre>REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+# fallback if invoked from elsewhere
+if [ -z "${REPO_ROOT:-}" ]; then REPO_ROOT="$(pwd -P)"; fi</pre>
+
+      <h3>Example safe systemd unit template</h3>
+      <pre>[Unit]
+Description=AI Agent Dashboard
+After=network.target
+[Service]
+User=aiagent
+WorkingDirectory=/opt/ai-agent/dashboard
+EnvironmentFile=/etc/ai-agent/env
+ExecStart=/opt/ai-agent/venv/bin/gunicorn dashboard.app:app -k eventlet -b 0.0.0.0:8000 --workers 2
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target</pre>
+
+      <h3>Healthcheck probe (Helm template snippet)</h3>
+      <pre>livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 10</pre>
+    </section>
+
+    <section>
+      <h2>Release & verification checklist</h2>
+      <ol>
+        <li>Run <code>devops/tools/repo_inventory.sh</code> and fix missing items.</li>
+        <li>Run <code>./build_release_zip.sh</code> to create a deterministic artifact.</li>
+        <li>Extract on a clean VM, run <code>devops/tools/deploy_from_zip.sh &lt;zip&gt; --non-interactive</code>.</li>
+        <li>Run smoke tests: <code>devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 60</code>.</li>
+        <li>In k8s: helm upgrade --install with <code>values-production.yaml</code> and run post-deploy smoke.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Developer & operator notes</h2>
+      <ul>
+        <li>Keep secrets out of Git — use sealed-secrets or external secrets for production k8s.</li>
+        <li>Prefer image tags (immutable) in production values file.</li>
+        <li>CI should fail on first critical error and publish artifacts for rollbacks.</li>
+      </ul>
+    </section>
+
+    <footer style="margin-top:18px;color:#859bb3">
+      Generated: <strong id="ts"></strong> — follow this plan to reach v1 stable installer & Helm release.
+    </footer>
+  </div>
+<script>document.getElementById('ts').innerText=new Date().toISOString();</script>
+</body>
+</html>
+

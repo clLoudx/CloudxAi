@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 1 — Intent & Input Parsing Engine</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 32px;
+    }
+    h1, h2, h3 {
+      color: #58a6ff;
+    }
+    h1 {
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 12px;
+    }
+    section {
+      margin-bottom: 48px;
+    }
+    pre {
+      background: #161b22;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    code {
+      color: #d2a8ff;
+    }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning {
+      color: #ff7b72;
+      font-weight: bold;
+    }
+    .truth {
+      color: #7ee787;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>STEP 1 — Intent & Input Parsing Engine</h1>
+<p class="truth">Max-Logic • Truth-Only • Zero Assumptions</p>
+
+<section>
+  <h2>1. Position in the Global Reasoning Chain</h2>
+  <pre><code>STEP 1: Intent Parsing (What is truly requested?)
+STEP 2: Context Parsing (What exists now?)
+STEP 3: Cross-Reference (Is it structurally valid?)</code></pre>
+  <p>
+    STEP 1 is the logical gatekeeper. No system action, analysis, or planning
+    is allowed before intent is normalized into machine-truth.
+  </p>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">Human requests are not executable instructions.</p>
+    <p>
+      They are subjective, incomplete, and often contradictory.
+      STEP 1 exists to convert human language into an objective execution intent.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Raw Input Definition</h2>
+  <pre><code>Raw Inputs:
+- User natural language request
+- Conversation history
+- Project state indicators
+- User permissions & safety scope
+- Execution environment metadata</code></pre>
+  <p class="warning">Natural language is treated as untrusted input.</p>
+</section>
+
+<section>
+  <h2>4. What "Intent" Means (Strict Definition)</h2>
+  <p>
+    Intent is the minimal, testable, non-emotional representation of a request.
+  </p>
+  <pre><code>Intent {
+  objective: string
+  desired_outcome: string
+  allowed_actions: string[]
+  forbidden_actions: string[]
+  constraints: {
+    time?: number
+    technology?: string[]
+    safety_level: low | medium | high
+  }
+  assumptions: string[]
+  ambiguity_level: low | medium | high
+  execution_risk: low | medium | high
+}</code></pre>
+</section>
+
+<section>
+  <h2>5. Internal Architecture</h2>
+  <pre><code>Intent Parsing Engine
+ ├─ Language Normalizer
+ ├─ Semantic Decomposer
+ ├─ Ambiguity Detector
+ ├─ Constraint Extractor
+ ├─ Risk Classifier
+ └─ Intent Validator</code></pre>
+</section>
+
+<section>
+  <h2>6. Semantic Decomposition</h2>
+  <p>
+    Each request is broken into atomic logical components:
+  </p>
+  <pre><code>Verb (action)
+Target (domain)
+Expected Result (state change)
+Unknowns (missing information)</code></pre>
+  <p class="warning">Unknowns are preserved — never guessed.</p>
+</section>
+
+<section>
+  <h2>7. Ambiguity & Missing Information Detection</h2>
+  <ul>
+    <li>Undefined scope</li>
+    <li>Multiple possible meanings</li>
+    <li>Missing success criteria</li>
+    <li>Implicit unsafe assumptions</li>
+  </ul>
+  <p class="warning">High ambiguity blocks execution.</p>
+</section>
+
+<section>
+  <h2>8. Constraint & Safety Extraction</h2>
+  <pre><code>Examples:
+- "Do not change architecture"
+- "Only refactor"
+- "Must be backward compatible"
+- "Production system"</code></pre>
+  <p>
+    Safety level determines whether later agents may:
+    run commands, modify infra, or change data.
+  </p>
+</section>
+
+<section>
+  <h2>9. Risk Classification</h2>
+  <pre><code>LOW    → formatting, comments, naming
+MEDIUM → logic changes, refactors
+HIGH   → auth, infra, data, security</code></pre>
+  <p class="warning">High-risk intent requires validation layers later.</p>
+</section>
+
+<section>
+  <h2>10. Validation Rules</h2>
+  <div class="box">
+    <ul>
+      <li>Objective must be measurable</li>
+      <li>Outcome must be verifiable</li>
+      <li>No internal contradictions</li>
+      <li>Forbidden actions are absolute</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>11. Output Guarantee</h2>
+  <p class="truth">
+    STEP 1 guarantees that downstream reasoning operates on intent truth,
+    not linguistic illusion.
+  </p>
+  <p>
+    This is the first hallucination firewall.
+  </p>
+</section>
+
+<section>
+  <h2>12. Handoff to STEP 2</h2>
+  <pre><code>STEP 1 Output → Structured Intent
+        ↓
+STEP 2 Input → Context Parsing Engine</code></pre>
+</section>
+
+</body>
+</html>
+

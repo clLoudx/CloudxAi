@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HyperBuild AI — Admin AI Rules DSL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  background:#020617;
+  color:#e5e7eb;
+  font-family:Inter, system-ui, sans-serif;
+  padding:48px;
+  line-height:1.9;
+}
+section {
+  background:#000814;
+  border:1px solid #1f2937;
+  border-radius:20px;
+  padding:44px;
+  margin-bottom:72px;
+}
+h1,h2,h3 { color:#22c55e; }
+.logic {
+  border-left:6px solid #22c55e;
+  padding:24px;
+  margin:28px 0;
+}
+.fail { border-left-color:#ef4444; }
+pre {
+  background:#020617;
+  padding:26px;
+  border-radius:14px;
+  overflow:auto;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<h1>Admin AI Rules DSL</h1>
+<p><strong>Governance Language for Autonomous Software Execution</strong></p>
+
+<section>
+<h2>1. Purpose</h2>
+<div class="logic truth">
+<p>
+Admin AI exists to prevent intelligent systems from doing stupid things at scale.
+</p>
+</div>
+</section>
+
+<section>
+<h2>2. Core Concepts</h2>
+<ul>
+<li>Rule</li>
+<li>Condition</li>
+<li>Action</li>
+<li>Approval</li>
+<li>Audit</li>
+</ul>
+</section>
+
+<section>
+<h2>3. Rule Structure</h2>
+<pre><code>RULE &lt;rule_name&gt;:
+  IF &lt;conditions&gt;
+  THEN &lt;action&gt;
+  [ELSE &lt;fallback&gt;]</code></pre>
+</section>
+
+<section>
+<h2>4. Conditions</h2>
+<pre><code>environment == "production"
+action == "execute"
+file.path CONTAINS "/infra/"
+risk_score &gt; 0.7
+user.role != "admin"</code></pre>
+</section>
+
+<section>
+<h2>5. Actions</h2>
+<pre><code>allow
+deny
+require_human_approval
+log_only
+rollback_last_change</code></pre>
+</section>
+
+<section>
+<h2>6. Examples</h2>
+
+<h3>Production Protection</h3>
+<pre><code>RULE prod_guard:
+  IF environment == "production"
+  AND action == "execute"
+  THEN require_human_approval</code></pre>
+
+<h3>Dangerous Command Block</h3>
+<pre><code>RULE block_rm_rf:
+  IF terminal.command CONTAINS "rm -rf"
+  THEN deny</code></pre>
+
+<h3>Auto-Approve Safe Refactors</h3>
+<pre><code>RULE safe_refactor:
+  IF risk_score &lt; 0.2
+  AND action == "modify_code"
+  THEN allow</code></pre>
+
+</section>
+
+<section>
+<h2>7. Rule Evaluation Order</h2>
+<pre><code>1. System rules
+2. Organization rules
+3. Project rules
+4. User rules</code></pre>
+
+<div class="logic">
+<p>First match wins. Explicit deny overrides allow.</p>
+</div>
+</section>
+
+<section>
+<h2>8. Audit & Traceability</h2>
+<ul>
+<li>Every rule evaluation is logged</li>
+<li>Every denied action is explainable</li>
+<li>Every approval is traceable to a human</li>
+</ul>
+</section>
+
+<section>
+<h2>9. Safety Guarantees</h2>
+<div class="logic fail">
+<p>
+No execution without an explicit rule path.  
+Silence is denial.
+</p>
+</div>
+</section>
+
+<section>
+<h2>10. Strategic Truth</h2>
+<div class="logic truth">
+<p>
+This DSL is the difference between a toy AI  
+and an enterprise-grade AI operating system.
+</p>
+</div>
+</section>
+
+<footer>
+<p>HyperBuild AI · Admin AI Governance Layer · Truth-Only</p>
+</footer>
+
+</body>
+</html>
+

@@ -1,0 +1,41 @@
+# Patch: fix-systemd.patch
+# Description: Unify systemd service to devops/systemd/aiagent.service with correct paths and user
+# Date: 2025-01-27
+# Status: Applied (documentation only - changes already made)
+
+# This patch documents the systemd service unification.
+
+# Canonical service file: devops/systemd/aiagent.service
+# Contents:
+# [Unit]
+# Description=AI Agent Core Service
+# After=network.target
+#
+# [Service]
+# Type=simple
+# User=aiagent
+# Group=aiagent
+# EnvironmentFile=/etc/ai-agent/env
+# WorkingDirectory=/opt/ai-agent
+# ExecStart=/opt/ai-agent/venv/bin/gunicorn -k eventlet -w 1 -b 0.0.0.0:8000 dashboard.app:app
+# Restart=always
+# RestartSec=5
+# Environment=ENV=production
+#
+# [Install]
+# WantedBy=multi-user.target
+
+# Key changes:
+# - Path: /opt/ai-agent (canonical)
+# - User: aiagent (not root)
+# - Service name: aiagent.service (consistent)
+
+# Archived:
+# - ai-agent/deploy/systemd/ai-agent.service
+# - ai-agent/deploy/systemd/ai-agent-worker.service
+# - ai-agent/devops/systemd/aiagent.service
+
+# Verification:
+# Run: test -f devops/systemd/aiagent.service && grep -q "User=aiagent" devops/systemd/aiagent.service && echo "OK" || echo "FAIL"
+# Expected: OK
+

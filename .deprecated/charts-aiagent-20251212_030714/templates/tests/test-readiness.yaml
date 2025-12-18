@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "aiagent-test-readiness"
+  labels:
+    app.kubernetes.io/name: aiagent
+  annotations:
+    "helm.sh/hook": test
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      containers:
+        - name: curl-test
+          image: curlimages/curl:7.85.0
+          command: ['sh','-c','curl --fail http://aiagent-service:{{ .Values.service.port }}/healthz || exit 1']
+      restartPolicy: Never
+

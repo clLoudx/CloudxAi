@@ -1,0 +1,72 @@
+name: Build ZIP & Self-Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      TZ: 'UTC'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python (for smoke test scripts if any)
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Ensure zip is available
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y zip unzip
+
+      - name: Make scripts executable
+        run: |
+          chmod +x ./build_final_zip.sh || true
+          chmod +x ./build_aiagent_bundle.sh || true
+          chmod +x ./devops/tools/self_test_bundle.sh || true
+
+      - name: Run deterministic ZIP build (fail-fast)
+        id: build_zip
+        run: |
+          set -euo pipefail
+          if [ -x ./build_final_zip.sh ]; then
+            ./build_final_zip.sh
+          elif [ -x ./build_aiagent_bundle.sh ]; then
+            ./build_aiagent_bundle.sh
+          else
+            echo "No build script found"; exit 2
+          fi
+          echo "::set-output name=zip::$(ls -1 aiagent_release_*.zip | head -n1 || true)"
+
+      - name: Upload ZIP artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiagent_release_zip
+          path: aiagent_release_*.zip
+
+      - name: Run bundle self-test
+        if: success()
+        run: |
+          set -euo pipefail
+          ZIP=$(ls -1 aiagent_release_*.zip | head -n1)
+          if [ -z "$ZIP" ]; then echo "ZIP not found" && exit 2; fi
+          chmod +x devops/tools/self_test_bundle.sh
+          ./devops/tools/self_test_bundle.sh "$ZIP"
+
+      - name: Upload self-test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiagent_selftest_logs
+          path: ./devops/tools/selftest-logs || true
+

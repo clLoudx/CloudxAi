@@ -1,0 +1,7 @@
+AI Agent Installed Successfully!
+
+Web:  https://{{ .Values.ingress.host }}
+TLS: {{ if .Values.ingress.tls.enabled }}Enabled{{ else }}Disabled{{ end }}
+
+Redis:  {{ if .Values.redis.enabled }}Enabled ({{ .Values.redis.architecture }}){{ else }}External / Disabled{{ end }}
+

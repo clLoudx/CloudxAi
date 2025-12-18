@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Installer Guide</title><link rel="stylesheet" href="styles.css"></head><body>
+<header class="container"><h1>Installer & Repair Script</h1></header>
+<div class="layout container">
+<aside class="sidebar"><h3>Scripts</h3><ul><li>aiagent_full_power_installer.sh</li><li>mega_installer_v1.sh</li><li>scripts/build_and_export.sh</li></ul></aside>
+<main class="content">
+<section class="card"><h2>Location & Purpose</h2>
+<p>The installer script lives at project root: <code>aiagent_full_power_installer.sh</code>. It automates install, repair, venv setup, systemd unit creation, nginx template, and more.</p>
+</section>
+<section class="card"><h2>Commands</h2>
+<pre>
+sudo ./aiagent_full_power_installer.sh install
+sudo ./aiagent_full_power_installer.sh repair
+sudo ./aiagent_full_power_installer.sh apply_patch
+sudo ./aiagent_full_power_installer.sh build_images
+sudo ./aiagent_full_power_installer.sh export_images
+</pre>
+<p>Edit <code>/etc/ai-agent/env</code> before starting services.</p>
+</section>
+<section class="card"><h2>File paths created</h2>
+<pre>
+/opt/aiagent/           # project copied here by installer
+/etc/ai-agent/env       # secrets (600)
+ /etc/systemd/system/aiagent-app.service
+ /etc/systemd/system/aiagent-rq.service
+/etc/nginx/sites-available/ai-agent.conf
+/var/backups/aiagent_*  # backups created during install
+</pre>
+</section>
+</main></div><footer class="footer">Always test installer in staging first.</footer><script src="scripts.js"></script></body></html>

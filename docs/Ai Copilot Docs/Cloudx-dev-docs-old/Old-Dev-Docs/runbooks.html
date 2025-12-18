@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Runbooks & Alerts</title><link rel="stylesheet" href="styles.css"></head><body>
+<header class="container"><h1>Runbooks & Alerting</h1></header>
+<div class="layout container">
+<aside class="sidebar"><h3>Alerts</h3><ul><li>AIWorkerDown</li><li>AIQueueHigh</li><li>AIDLQDepthHigh</li></ul></aside>
+<main class="content">
+<section class="card"><h2>AIWorkerDown</h2>
+<pre>
+Condition: up{job="ai-agent"} == 0 for 2m
+Actions:
+1) Check systemctl status aiagent-app and aiagent-rq
+2) Inspect logs: sudo journalctl -u aiagent-app -n 200
+3) Restart services or roll back deploy
+</pre>
+</section>
+<section class="card"><h2>AIQueueHigh</h2>
+<pre>
+Condition: ai_queue_tasks > 50 for 1m
+Actions:
+1) Scale workers: docker compose up -d --scale worker=3
+2) Investigate slow external calls in ai/adapter
+3) Requeue/Inspect DLQ items
+</pre>
+</section>
+<section class="card"><h2>DLQ handling</h2>
+<pre>
+Inspect DLQ:
+redis-cli LRANGE ai_tasks_dlq 0 50
+Requeue:
+redis-cli RPOPLPUSH ai_tasks_dlq ai_tasks
+</pre>
+</section>
+</main></div><footer class="footer">Integrate runbooks into PagerDuty / Slack for automated notifications.</footer><script src="scripts.js"></script></body></html>

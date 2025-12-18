@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hyperbuild AI — Max-Logic Implementation Strategy</title>
+  <style>
+    body { font-family: Inter, system-ui, Arial, sans-serif; background:#0a0a0e; color:#e6e6eb; line-height:1.9; padding:56px; }
+    h1,h2,h3,h4 { color:#ffffff; }
+    h1 { font-size:2.8rem; }
+    h2 { margin-top:64px; font-size:2.2rem; }
+    h3 { margin-top:40px; font-size:1.6rem; }
+    h4 { margin-top:28px; font-size:1.2rem; }
+    pre { background:#13131b; padding:22px; border-radius:16px; overflow-x:auto; }
+    .box { background:#13131b; padding:32px; border-radius:20px; margin-top:32px; }
+    ul { margin-left:20px; }
+    .rule { color:#9ef0c3; }
+    .forbid { color:#f38ba8; }
+    .note { color:#f9c784; }
+  </style>
+</head>
+<body>
+
+<h1>Hyperbuild AI — Max-Logic End-to-End Implementation Strategy</h1>
+<p><strong>Purpose:</strong> Provide a complete, contradiction-free, execution-ready strategy to build a next-generation AI Software Engineer platform from absolute zero to a deployable system.</p>
+
+<div class="box">
+<h2>AXIOMS (Non-Negotiable Truths)</h2>
+<ul>
+  <li class="rule">AI value = orchestration + execution feedback</li>
+  <li class="rule">Models are interchangeable, architecture is not</li>
+  <li class="rule">Context must be structured, not textual</li>
+  <li class="rule">Every generation must be testable in reality</li>
+  <li class="forbid">No feature enters without structural necessity</li>
+</ul>
+</div>
+
+<h2>STEP 1 — INPUT LAYER (Human → Machine)</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Transform vague human intent into machine-operable objectives.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Accept natural language goals</li>
+  <li>Normalize intent into structured task objects</li>
+  <li>Reject ambiguous or unsafe instructions</li>
+</ul>
+<h3>Structure</h3>
+<pre>
+Intent {
+  goal: string
+  constraints: []
+  risk_level: low|medium|high
+}
+</pre>
+</div>
+
+<h2>STEP 2 — CONTEXT PARSING ENGINE</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Convert a project into a computable state.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Index file tree</li>
+  <li>Detect languages, frameworks</li>
+  <li>Map imports & dependencies</li>
+</ul>
+<h3>Structure</h3>
+<pre>
+ProjectContext {
+  files: Graph
+  dependencies: Graph
+  entry_points: []
+}
+</pre>
+</div>
+
+<h2>STEP 3 — CROSS-REFERENCE ENGINE</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Align current project state with known software archetypes.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Match project to known architecture patterns</li>
+  <li>Detect missing layers</li>
+  <li>Identify anti-patterns</li>
+</ul>
+<h3>Rule</h3>
+<p class="rule">Never invent architecture blindly.</p>
+</div>
+
+<h2>STEP 4 — INFERENCE & GAP ANALYSIS</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Infer what must exist but does not.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Detect missing configs, services, tests</li>
+  <li>Infer required abstractions</li>
+  <li>Rank gaps by execution impact</li>
+</ul>
+</div>
+
+<h2>STEP 5 — PLANNER AGENT</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Create a deterministic execution plan.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Break goal into ordered steps</li>
+  <li>Attach tools per step</li>
+  <li>Define success criteria</li>
+</ul>
+<h3>Structure</h3>
+<pre>
+PlanStep {
+  action
+  tool
+  expected_output
+}
+</pre>
+</div>
+
+<h2>STEP 6 — ARCHITECT AGENT</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Ensure structural correctness before code exists.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Design modules and boundaries</li>
+  <li>Validate scalability assumptions</li>
+  <li>Prevent tight coupling</li>
+</ul>
+<p class="rule">Architecture is validated before coding.</p>
+</div>
+
+<h2>STEP 7 — CODER AGENT</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Generate minimal, correct, testable code.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Apply diffs, not overwrites</li>
+  <li>Follow existing style</li>
+  <li>Comment only when necessary</li>
+</ul>
+<p class="forbid">No speculative code.</p>
+</div>
+
+<h2>STEP 8 — EXECUTION LAYER</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Observe reality.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Sandboxed command execution</li>
+  <li>Capture stdout, stderr, exit codes</li>
+  <li>Timeout and resource limits</li>
+</ul>
+</div>
+
+<h2>STEP 9 — RESULT ANALYZER</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Convert raw output into signals.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Error classification</li>
+  <li>Regression detection</li>
+  <li>Success validation</li>
+</ul>
+</div>
+
+<h2>STEP 10 — DEBUGGER AGENT</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Resolve contradictions between expectation and reality.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Trace failure source</li>
+  <li>Propose minimal fixes</li>
+  <li>Re-run affected steps only</li>
+</ul>
+</div>
+
+<h2>STEP 11 — VALIDATOR AGENT</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Decide if the system is stable.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Run tests</li>
+  <li>Check architecture invariants</li>
+  <li>Approve or reject state</li>
+</ul>
+<p class="rule">No commit without validation.</p>
+</div>
+
+<h2>STEP 12 — MEMORY SYSTEM</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Prevent repetition and context loss.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Summarize cycles</li>
+  <li>Store decisions</li>
+  <li>Index failures and fixes</li>
+</ul>
+</div>
+
+<h2>STEP 13 — FRONTEND SYSTEM</h2>
+<div class="box">
+<h3>Goal</h3>
+<p>Expose system thinking transparently.</p>
+<h3>Implementation</h3>
+<ul>
+  <li>Chat timeline</li>
+  <li>File tree view</li>
+  <li>Execution logs</li>
+  <li>Agent states</li>
+</ul>
+</div>
+
+<h2>STEP 14 — DEPLOYMENT (V1)</h2>
+<div class="box">
+<ul>
+  <li>Single-node server</li>
+  <li>User isolation</li>
+  <li>Config-based AI providers</li>
+</ul>
+<p class="note">No auto-scaling in V1.</p>
+</div>
+
+<h2>FINAL OUTPUT</h2>
+<div class="box">
+<p>This system is:</p>
+<ul>
+  <li>Not an assistant</li>
+  <li>Not an IDE plugin</li>
+  <li>A deterministic AI Software Engineer</li>
+</ul>
+<p class="rule">Every step is observable. Every decision is justifiable.</p>
+</div>
+
+</body>
+</html>
+

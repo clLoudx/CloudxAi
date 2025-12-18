@@ -1,0 +1,32 @@
+# Patch: merge-smoke-tests.patch
+# Description: Merge unique smoke tests from root smoke_tests/ into devops/smoke_tests/
+# Date: 2025-01-27
+# Status: Applied (documentation only - changes already made)
+
+# This patch documents the smoke test consolidation.
+
+# Source: smoke_tests/ (root level)
+# Target: devops/smoke_tests/ (canonical location)
+
+# Tests merged:
+# - docker_compose_check.sh (unique functionality)
+# - kubernetes_probe.sh (unique functionality)
+# - smoke_check.sh (unique functionality)
+# - check_http.sh (enhanced with better retry logic)
+
+# Canonical smoke tests location: devops/smoke_tests/
+# Tests present:
+# - check_http.sh
+# - check_imports.sh
+# - ci_wrapper.sh
+# - docker_compose_check.sh
+# - kubernetes_probe.sh
+# - smoke_check.sh
+
+# Archived:
+# - smoke_tests/ → .deprecated/smoke_tests-root-YYYYMMDD_HHMMSS/
+
+# Verification:
+# Run: ls -1 devops/smoke_tests/*.sh | wc -l
+# Expected: 6
+

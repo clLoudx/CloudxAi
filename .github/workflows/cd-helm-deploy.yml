@@ -1,0 +1,75 @@
+name: CD - Helm Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'release-*'
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+jobs:
+  helm-deploy:
+    name: Helm Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: production
+      url: https://example.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig from secret
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+          chmod 600 ~/.kube/config
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+
+      - name: Show cluster info
+        run: kubectl cluster-info
+
+      - name: Prepare Helm values (image tag, registry)
+        run: |
+          TAG=${{ github.ref_name || github.sha }}
+          TAG_OVERRIDE=${{ secrets.IMAGE_TAG || TAG }}
+          echo "image.tag=${TAG_OVERRIDE}" > /tmp/helm-extra-values.txt
+          if [ -n "${{ secrets.REGISTRY_USERNAME }}" ]; then
+            echo "image.repository=${{ secrets.REGISTRY_HOST || 'docker.io' }}/aiagent" >> /tmp/helm-extra-values.txt
+          fi
+          cat /tmp/helm-extra-values.txt
+
+      - name: Helm upgrade --install (aiagent)
+        env:
+          KUBECONFIG: ${{ env.HOME }}/.kube/config
+        run: |
+          helm upgrade --install aiagent devops/helm/aiagent \
+            -n aiagent --create-namespace \
+            -f devops/helm/aiagent/values.yaml \
+            --wait --timeout 10m \
+            --set-file=certs.tls="" \
+            --set $(cat /tmp/helm-extra-values.txt | tr '\n' ',') \
+            || (echo "Helm deploy failed - printing resources"; kubectl -n aiagent get all -o wide; exit 1)
+
+      - name: Run post-deploy smoke tests
+        run: |
+          chmod +x smoke_tests/ci_wrapper.sh
+          ./smoke_tests/ci_wrapper.sh k8s
+

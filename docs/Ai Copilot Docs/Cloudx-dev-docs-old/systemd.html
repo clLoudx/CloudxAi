@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AI-Agent SystemD Deployment Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f4f6f8;
+        color: #222;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+    }
+    header {
+        background: #0d1117;
+        color: #fff;
+        padding: 25px;
+        text-align: center;
+        border-bottom: 3px solid #30363d;
+    }
+    h1, h2, h3 {
+        font-weight: 600;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.08);
+    }
+    pre {
+        background: #0d1117;
+        color: #eee;
+        padding: 18px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-size: 0.95em;
+    }
+    code {
+        background: #e1e4e8;
+        padding: 2px 6px;
+        border-radius: 5px;
+    }
+    .section {
+        margin-bottom: 45px;
+    }
+    .note {
+        background: #fff5c2;
+        border-left: 5px solid #e6c200;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    .success {
+        background: #dbffe0;
+        border-left: 5px solid #0f9d58;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    .error {
+        background: #ffe0e0;
+        border-left: 5px solid #ff4d4d;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 0.9em;
+        color: #666;
+    }
+    a {
+        color: #0366d6;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>AI-Agent SystemD Services Guide</h1>
+    <p>Installation • Management • Auto-Repair • Best Practices</p>
+</header>
+
+<div class="container">
+
+<!-- SECTION -->
+<div class="section">
+    <h2>1. Overview</h2>
+    <p>
+        SystemD is used to run the AI-Agent processes as background services,
+        ensuring they automatically start on boot, restart on failure, and can be managed centrally.
+    </p>
+
+    <p>
+        This guide covers:
+    </p>
+
+    <ul>
+        <li>Service structure (Agent + Worker)</li>
+        <li>Installation and enabling</li>
+        <li>Monitoring and troubleshooting</li>
+        <li>Auto-repair mechanisms</li>
+        <li>Production hardening</li>
+    </ul>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>2. SystemD Service Files (Full)</h2>
+
+    <h3>2.1 aiagent.service</h3>
+    <pre>
+[Unit]
+Description=AI-Agent Core Coordinator
+After=network.target redis-server.service
+
+[Service]
+Type=simple
+User=aiagent
+WorkingDirectory=/opt/aiagent
+ExecStart=/usr/bin/python3 coordinator.py
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/aiagent/.env
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+    </pre>
+
+    <h3>2.2 aiagent-worker.service</h3>
+    <pre>
+[Unit]
+Description=AI-Agent Worker Processor
+After=network.target redis-server.service
+
+[Service]
+Type=simple
+User=aiagent
+WorkingDirectory=/opt/aiagent
+ExecStart=/usr/bin/python3 worker/rq_worker.py
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/aiagent/.env
+StandardOutput=journal
+StandardError=journal
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+    </pre>
+
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>3. Install SystemD Services</h2>
+
+    <h3>3.1 Copy Service Files</h3>
+
+    <pre>
+sudo cp devops/systemd/aiagent.service /etc/systemd/system/
+sudo cp devops/systemd/aiagent-worker.service /etc/systemd/system/
+    </pre>
+
+    <h3>3.2 Reload SystemD</h3>
+
+    <pre>sudo systemctl daemon-reload</pre>
+
+    <h3>3.3 Enable Services at Boot</h3>
+
+    <pre>
+sudo systemctl enable aiagent
+sudo systemctl enable aiagent-worker
+    </pre>
+
+    <h3>3.4 Start Services</h3>
+
+    <pre>
+sudo systemctl start aiagent
+sudo systemctl start aiagent-worker
+    </pre>
+
+    <div class="success">
+        ✔ After this step your AI-Agent automatically runs 24/7 and survives reboots.
+    </div>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>4. Monitoring & Logs</h2>
+
+    <h3>Live logs</h3>
+    <pre>sudo journalctl -fu aiagent</pre>
+
+    <h3>Worker logs</h3>
+    <pre>sudo journalctl -fu aiagent-worker</pre>
+
+    <h3>Check service status</h3>
+    <pre>systemctl status aiagent</pre>
+
+    <h3>Restart services</h3>
+    <pre>
+sudo systemctl restart aiagent
+sudo systemctl restart aiagent-worker
+    </pre>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>5. Auto-Repair Logic</h2>
+
+    <p>Your setup includes <code>doctor.sh</code> and <code>verify_and_repair.sh</code> which integrate tightly with SystemD.</p>
+
+    <h3>5.1 Health Check Command</h3>
+    <pre>/opt/aiagent/modules/healthcheck.sh</pre>
+
+    <h3>5.2 Auto-Repair Execution</h3>
+    <pre>sudo bash verify_and_repair.sh</pre>
+
+    <h3>5.3 Automatic Restart (SystemD built-in)</h3>
+    <pre>Restart=always  
+RestartSec=5</pre>
+
+    <div class="note">
+        If the agent crashes, SystemD restarts it automatically in ~5 seconds.
+    </div>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>6. Hardening for Production</h2>
+
+    <h3>6.1 Use a dedicated user</h3>
+    <pre>
+sudo useradd -r -s /bin/false aiagent
+sudo chown -R aiagent:aiagent /opt/aiagent
+    </pre>
+
+    <h3>6.2 Resource Limits</h3>
+    <pre>LimitNOFILE=65535</pre>
+
+    <h3>6.3 Restart Behavior</h3>
+    <ul>
+        <li><code>Restart=always</code> ensures no downtime</li>
+        <li><code>RestartSec=5</code> avoids restart loops</li>
+    </ul>
+
+    <h3>6.4 Logging Hardened</h3>
+    <pre>
+StandardOutput=journal
+StandardError=journal
+    </pre>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>7. Uninstall SystemD Services</h2>
+
+    <pre>
+sudo systemctl stop aiagent
+sudo systemctl stop aiagent-worker
+
+sudo systemctl disable aiagent
+sudo systemctl disable aiagent-worker
+
+sudo rm /etc/systemd/system/aiagent.service
+sudo rm /etc/systemd/system/aiagent-worker.service
+
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+    </pre>
+</div>
+
+<!-- SECTION -->
+<div class="section">
+    <h2>8. Troubleshooting</h2>
+
+    <h3>8.1 Service won’t start</h3>
+    <pre>journalctl -xe</pre>
+
+    <h3>8.2 Missing environment variables</h3>
+    <pre>sudo nano /opt/aiagent/.env</pre>
+
+    <h3>8.3 Redis not running</h3>
+    <pre>sudo systemctl status redis</pre>
+
+    <h3>8.4 Python module missing</h3>
+    <pre>
+cd /opt/aiagent
+pip3 install -r requirements.txt
+    </pre>
+
+    <h3>8.5 Full repair</h3>
+    <pre>sudo bash doctor.sh</pre>
+</div>
+
+</div>
+
+<footer>
+    AI-Agent DevOps & SystemD Documentation — V1 • Generated by ChatGPT (Max-Logic Mode)
+</footer>
+
+</body>
+</html>
+

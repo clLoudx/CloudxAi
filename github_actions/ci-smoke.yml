@@ -1,0 +1,54 @@
+name: CI — Build & Smoke Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install system deps (for smoke scripts)
+        run: sudo apt-get update && sudo apt-get install -y curl jq netcat
+
+      - name: Build frontend (optional)
+        working-directory: ./frontend
+        run: |
+          npm ci || true
+          npm run build || true
+
+      - name: Install python deps for smoke tests
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+
+      - name: Run unit tests (pytest if present)
+        run: |
+          if [ -d . ] && [ -f pytest.ini ] || [ -f setup.cfg ] || [ -d tests ]; then
+            pytest -q || exit 1
+          else
+            echo "No pytest configuration found — skipping unit tests"
+          fi
+
+      - name: Run smoke tests (devops/tools/post_deploy_smoke.sh in dry mode)
+        run: |
+          # If we have a smoke script, run it in "check-only" mode against localhost
+          if [ -x devops/tools/post_deploy_smoke.sh ]; then
+            ./devops/tools/post_deploy_smoke.sh --selftest || (echo "Smoke script failed" && exit 1)
+          else
+            echo "No smoke script; skipping"
+          fi
+
+    # Fail fast behaviour (default) — job stops on first failing step.
+

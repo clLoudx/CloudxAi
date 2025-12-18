@@ -1,0 +1,29 @@
+image:
+  repository: ghcr.io/your-org/aiagent-web
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hostname: "your-domain.com"
+  tlsSecretName: "aiagent-tls"
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  APP_ENV: "production"
+  PUBLIC_URL: "https://your-domain.com"
+

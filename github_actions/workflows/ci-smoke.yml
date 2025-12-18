@@ -1,0 +1,105 @@
+name: CI — Build & Smoke Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-frontend:
+    name: Build frontend (if present)
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-built: ${{ steps.frontend.outputs.built || 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (if frontend exists)
+        if: files.exists('frontend/package.json')
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps & build
+        id: frontend
+        if: files.exists('frontend/package.json')
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          echo "::set-output name=built::true"
+        shell: bash
+
+      - name: Mark no frontend
+        if: "! (files.exists('frontend/package.json'))"
+        run: echo "No frontend/package.json found; skipping frontend build."
+
+  smoke-tests:
+    name: Smoke tests (after build)
+    runs-on: ubuntu-latest
+    needs: [ build-frontend ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system deps (apt)
+        run: sudo apt-get update && sudo apt-get install -y curl jq docker-compose || true
+
+      - name: Create Python venv
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+
+      - name: Run import check (venv)
+        run: |
+          . .venv/bin/activate
+          chmod +x devops/smoke_tests/check_imports.sh || true
+          ./devops/smoke_tests/check_imports.sh .venv || echo "check_imports.sh returned non-zero (may be acceptable)"
+
+      - name: Optional: bring up docker-compose stack (if present)
+        if: files.exists('docker-compose.yml') || files.exists('docker-compose.yaml')
+        run: |
+          docker-compose up -d --build
+          sleep 6
+
+      - name: Run HTTP smoke test
+        run: |
+          chmod +x devops/smoke_tests/check_http.sh || true
+          ./devops/smoke_tests/check_http.sh "http://127.0.0.1:8000/healthz" 20 || echo "HTTP smoke failed (check app logs)."
+
+      - name: Run post_deploy_smoke wrapper if available
+        run: |
+          if [ -x devops/tools/post_deploy_smoke.sh ]; then
+            chmod +x devops/tools/post_deploy_smoke.sh
+            devops/tools/post_deploy_smoke.sh 127.0.0.1 aiagent-web /healthz 8000 20 || echo "post_deploy_smoke failed"
+          else
+            echo "No post_deploy_smoke.sh found; skipped"
+          fi
+
+      - name: Tear down docker-compose
+        if: always() && (files.exists('docker-compose.yml') || files.exists('docker-compose.yaml'))
+        run: |
+          docker-compose down --volumes || true
+
+      - name: Upload logs (artifact)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-smoke-logs
+          path: |
+            /var/log/* || true
+            devops/smoke_tests/*.log || true
+

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEP 8 — Memory & Learning System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #0b0f14;
+      color: #e6edf3;
+      line-height: 1.7;
+      padding: 32px;
+    }
+    h1, h2, h3 { color: #58a6ff; }
+    h1 { border-bottom: 1px solid #30363d; padding-bottom: 12px; }
+    section { margin-bottom: 52px; }
+    pre { background: #161b22; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    code { color: #d2a8ff; }
+    .box {
+      background: #11161c;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .warning { color: #ff7b72; font-weight: bold; }
+    .truth { color: #7ee787; font-weight: bold; }
+    .flow { color: #f2cc60; }
+  </style>
+</head>
+<body>
+
+<h1>STEP 8 — Memory & Learning System</h1>
+<p class="truth">Max-Logic • Deterministic Memory • No Hallucinated Learning</p>
+
+<section>
+  <h2>1. Position in the Cognitive Pipeline</h2>
+  <pre><code>STEP 1 → Intent Truth
+STEP 2 → Context Snapshot
+STEP 3 → Validation
+STEP 4 → Inference
+STEP 5 → Planning
+STEP 6 → Architecture
+STEP 7 → Execution
+STEP 8 → Memory & Learning</code></pre>
+</section>
+
+<section>
+  <h2>2. Core Truth</h2>
+  <div class="box">
+    <p class="warning">Learning without verification creates corruption.</p>
+    <p>
+      STEP 8 does not "learn" everything. It only stores validated reality.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>3. What Memory Means (Strict Definition)</h2>
+  <p>
+    Memory is structured, indexed knowledge extracted from verified executions.
+  </p>
+  <ul>
+    <li>No raw guesses</li>
+    <li>No unverified patterns</li>
+    <li>No emotional or probabilistic storage</li>
+  </ul>
+</section>
+
+<section>
+  <h2>4. Inputs</h2>
+  <pre><code>Inputs:
+- ExecutorOutput (STEP 7)
+- ArchitectureSpec (STEP 6)
+- ExecutionPlan (STEP 5)
+- Error & Fix Logs</code></pre>
+</section>
+
+<section>
+  <h2>5. Internal Structure</h2>
+  <pre><code>Memory System
+ ├─ Short-Term Memory (Session)
+ ├─ Long-Term Memory (Persistent)
+ ├─ Knowledge Graph Builder
+ ├─ Pattern Extractor
+ ├─ Validation Gate
+ └─ Retrieval Engine</code></pre>
+</section>
+
+<section>
+  <h2>6. Memory Types</h2>
+  <pre><code>Short-Term:
+- Current task context
+- Active constraints
+
+Long-Term:
+- Proven fixes
+- Architecture decisions
+- Tool behaviors
+- Failure patterns</code></pre>
+</section>
+
+<section>
+  <h2>7. Knowledge Graph Model</h2>
+  <pre><code>Node Types:
+- Problem
+- Cause
+- Fix
+- Tool
+- Architecture Component
+
+Edges:
+- causes
+- fixes
+- depends_on
+- violates
+- validates</code></pre>
+</section>
+
+<section>
+  <h2>8. Learning Rules</h2>
+  <div class="box">
+    <ul>
+      <li>Only store if execution passed verification</li>
+      <li>Every memory node has a source</li>
+      <li>Every relation is reversible and traceable</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>9. Anti-Hallucination Safeguards</h2>
+  <pre><code>Forbidden:
+- Storing assumptions
+- Generalizing from single failure
+- Extrapolating without repetition</code></pre>
+</section>
+
+<section>
+  <h2>10. Retrieval Logic</h2>
+  <p>
+    Memory is queried before planning and execution.
+  </p>
+  <pre><code class="flow">New Intent
+   ↓
+Search Knowledge Graph
+   ↓
+Inject Proven Patterns
+   ↓
+Continue Pipeline</code></pre>
+</section>
+
+<section>
+  <h2>11. Output</h2>
+  <pre><code>MemoryUpdate {
+  nodes_added: number
+  relations_added: number
+  confidence_score: 0.0 - 1.0
+}</code></pre>
+</section>
+
+<section>
+  <h2>12. Guarantees</h2>
+  <p class="truth">
+    STEP 8 ensures the system improves without drifting away from truth.
+  </p>
+</section>
+
+<section>
+  <h2>13. Handoff</h2>
+  <pre><code>STEP 8 Output → Verified Knowledge Base
+        ↓
+STEP 9 Input → DevOps & Deployment Brain</code></pre>
+</section>
+
+</body>
+</html>

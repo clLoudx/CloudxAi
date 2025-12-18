@@ -1,0 +1,129 @@
+name: CI - Build & Test
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "*" ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  lint-and-test:
+    name: Lint & Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Python import checks
+        run: |
+          chmod +x smoke_tests/check_imports.sh || true
+          ./smoke_tests/check_imports.sh
+
+      - name: Run pytest
+        run: |
+          if [ -f pytest.ini ] || [ -d tests ]; then
+            pytest -q
+          else
+            echo "No pytest tests found; skipping"
+          fi
+
+  build-artifacts:
+    name: Build frontend & backend bundle
+    needs: [lint-and-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (for frontend build)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend (if exists)
+        working-directory: ./frontend
+        run: |
+          if [ -f frontend/package.json ]; then
+            cd frontend
+            npm ci
+            npm run build || npm run build:prod || true
+            cd -
+          else
+            echo "No frontend to build"
+          fi
+
+      - name: Build release ZIP
+        run: |
+          chmod +x build_release_zip.sh || true
+          ./build_release_zip.sh
+        env:
+          CI: true
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiagent-release
+          path: ./dist/*.zip
+
+  docker-build-and-push:
+    name: Build & push Docker images (optional)
+    needs: [build-artifacts]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' # don't push on PRs
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU (multiarch)
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to registry (optional)
+        if: secrets.REGISTRY_USERNAME && secrets.REGISTRY_PASSWORD
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.REGISTRY_HOST || 'docker.io' }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build & push images
+        run: |
+          TAG=${GITHUB_SHA::8}
+          IMG=${{ secrets.REGISTRY_HOST || 'docker.io' }}/aiagent/web:${TAG}
+          IMG_WORKER=${{ secrets.REGISTRY_HOST || 'docker.io' }}/aiagent/worker:${TAG}
+          if [ -f Dockerfile ]; then
+            docker build -t "$IMG" -f Dockerfile .
+            if [ -n "${{ secrets.REGISTRY_USERNAME }}" ]; then docker push "$IMG"; fi
+          fi
+          if [ -f Dockerfile.worker ]; then
+            docker build -t "$IMG_WORKER" -f Dockerfile.worker .
+            if [ -n "${{ secrets.REGISTRY_USERNAME }}" ]; then docker push "$IMG_WORKER"; fi
+          fi
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
+

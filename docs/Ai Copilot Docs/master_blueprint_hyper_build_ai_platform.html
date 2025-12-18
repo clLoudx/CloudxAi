@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HyperBuild AI — Master Blueprint (Repo + Product + Business)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  background:#020617;
+  color:#e5e7eb;
+  font-family:Inter, system-ui, sans-serif;
+  line-height:1.9;
+  padding:48px;
+}
+h1,h2,h3,h4 { color:#22c55e; }
+section {
+  background:#000814;
+  border:1px solid #1f2937;
+  border-radius:18px;
+  padding:36px;
+  margin-bottom:72px;
+}
+.logic {
+  border-left:6px solid #22c55e;
+  padding:24px;
+  margin:28px 0;
+}
+.fail { border-left-color:#ef4444; }
+.truth { border-left-color:#4ade80; }
+pre {
+  background:#020617;
+  padding:26px;
+  border-radius:14px;
+  overflow:auto;
+  font-size:14px;
+}
+ul { margin-left:28px; }
+</style>
+</head>
+
+<body>
+
+<h1>HYPERBUILD AI — MASTER BLUEPRINT</h1>
+<p><strong>Repository + Product + Business · Max-Logic · Truth-Only</strong></p>
+
+<!-- ======================================================= -->
+<!-- SECTION A — REPOSITORY (BACKEND + FRONTEND)              -->
+<!-- ======================================================= -->
+<section>
+<h2>A — Real Repository Structure</h2>
+
+<pre><code>hyperbuild-ai/
+├── backend/
+│   ├── core/
+│   │   ├── input/
+│   │   │   ├── intent_parser.py
+│   │   │   ├── context_normalizer.py
+│   │   │   └── constraints.py
+│   │   ├── reasoning/
+│   │   │   ├── graph_engine.py
+│   │   │   ├── inference.py
+│   │   │   └── contradiction_check.py
+│   │   ├── execution/
+│   │   │   ├── sandbox.py
+│   │   │   ├── cmd_runner.py
+│   │   │   └── result_ingest.py
+│   │   ├── admin_ai/
+│   │   │   ├── rules_engine.py
+│   │   │   ├── audit_log.py
+│   │   │   └── approvals.py
+│   ├── api/
+│   │   ├── input.py
+│   │   ├── execute.py
+│   │   └── admin.py
+│   └── main.py
+│
+├── frontend/
+│   ├── app/
+│   │   ├── sidebar/
+│   │   ├── editor/
+│   │   ├── terminal/
+│   │   └── admin/
+│   ├── state/
+│   └── main.tsx
+│
+├── infra/
+│   ├── docker/
+│   ├── k8s/
+│   └── ci/
+│
+└── docs/
+    └── architecture.md
+</code></pre>
+
+<div class="logic truth">
+<p>This repository can be cloned and worked on immediately.</p>
+</div>
+</section>
+
+<!-- ======================================================= -->
+<!-- SECTION B — STEP 1 (EXTENDED CORE)                       -->
+<!-- ======================================================= -->
+<section>
+<h2>B — STEP 1 Expanded: Input / UX / IDE (Core of Intelligence)</h2>
+
+<h3>B1. Why STEP 1 is the Most Important</h3>
+<div class="logic">
+<p>If input is wrong, reasoning is hallucination.  
+If context is partial, execution is dangerous.</p>
+</div>
+
+<h3>B2. Input Sources (Hard Enumerated)</h3>
+<ul>
+<li>User message (NL or command)</li>
+<li>Open files (full content + hash)</li>
+<li>Cursor location</li>
+<li>Git diff + history</li>
+<li>Terminal output (stdout + stderr)</li>
+<li>Environment metadata</li>
+</ul>
+
+<h3>B3. Normalization Pipeline</h3>
+<pre><code>Raw Input
+ → Validation
+ → Normalization
+ → Canonical Context Object
+ → Immutable Fact Store</code></pre>
+
+<h3>B4. Canonical Input Object</h3>
+<pre><code>{
+  intent: "build api",
+  scope: ["backend"],
+  files: [...],
+  diffs: [...],
+  terminal: { cmd, output, code },
+  risk_level: "medium",
+  permissions: ["write", "execute"]
+}</code></pre>
+
+<div class="logic truth">
+<p>AI is forbidden to invent anything outside this object.</p>
+</div>
+
+<h3>B5. UX & IDE Integration</h3>
+<ul>
+<li>Side panel = reasoning trace</li>
+<li>Editor inline diffs</li>
+<li>Terminal execution preview</li>
+<li>Human approval checkpoints</li>
+</ul>
+
+</section>
+
+<!-- ======================================================= -->
+<!-- SECTION C — ADMIN AI ENGINE                              -->
+<!-- ======================================================= -->
+<section>
+<h2>C — Admin AI (Governance Brain)</h2>
+
+<h3>C1. Why Admin AI Exists</h3>
+<div class="logic fail">
+<p>Without governance, autonomous coding becomes a liability.</p>
+</div>
+
+<h3>C2. Rule Examples</h3>
+<pre><code>RULE prod_protection:
+  IF env == "production"
+  AND action == "execute"
+  THEN require_human_approval</code></pre>
+
+<h3>C3. Admin Dashboard Capabilities</h3>
+<ul>
+<li>Approve / deny actions</li>
+<li>Review AI decisions</li>
+<li>Roll back changes</li>
+<li>Freeze system evolution</li>
+</ul>
+</section>
+
+<!-- ======================================================= -->
+<!-- SECTION D — PITCH DECK (TEXT FORM)                       -->
+<!-- ======================================================= -->
+<section>
+<h2>D — Pitch Deck (Textual)</h2>
+
+<h3>Problem</h3>
+<p>AI coding tools generate code without understanding execution reality.</p>
+
+<h3>Solution</h3>
+<p>An AI Operating System that reasons, executes, and governs.</p>
+
+<h3>Market</h3>
+<ul>
+<li>Developers</li>
+<li>Startups</li>
+<li>Enterprises</li>
+</ul>
+
+<h3>Moat</h3>
+<ul>
+<li>Admin AI governance</li>
+<li>Execution-first reasoning</li>
+<li>Architecture-aware intelligence</li>
+</ul>
+</section>
+
+<!-- ======================================================= -->
+<!-- SECTION E — SAAS BUSINESS MODEL                          -->
+<!-- ======================================================= -->
+<section>
+<h2>E — SaaS Business Model</h2>
+
+<ul>
+<li>Free: local reasoning only</li>
+<li>Pro: execution + IDE</li>
+<li>Team: Admin AI + audit</li>
+<li>Enterprise: on-prem AI OS</li>
+</ul>
+
+<div class="logic truth">
+<p>You sell trust and control, not tokens.</p>
+</div>
+</section>
+
+<!-- ======================================================= -->
+<!-- SECTION F — ROADMAP                                     -->
+<!-- ======================================================= -->
+<section>
+<h2>F — Development Roadmap</h2>
+
+<ul>
+<li>- Core input + execution</li>
+<li>- IDE + UX</li>
+<li>- Admin AI</li>
+<li>- Platform & ecosystem</li>
+</ul>
+</section>
+
+<footer>
+<p>HyperBuild AI — Designed as an AI OS / AI CTO  
+Truth-Only · No Contradictions · Built to Scale</p>
+</footer>
+
+</body>
+</html>
+

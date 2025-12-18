@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CloudxDevAI Architecture</title>
+<style>
+body { font-family: Inter, sans-serif; padding: 40px; background: #0f172a; color: #e5e7eb; }
+h1, h2 { color: #38bdf8; }
+code { background: #020617; padding: 4px 6px; }
+</style>
+</head>
+<body>
+<h1>System Architecture</h1>
+<p>CloudxDevAI is a multi-tenant AI Software Development Platform.</p>
+
+<h2>Core Layers</h2>
+<ul>
+<li>Frontend (React + Vite)</li>
+<li>Backend API (Flask / FastAPI)</li>
+<li>Worker System (RQ / async)</li>
+<li>DevOps Layer (Helm, systemd, CI)</li>
+</ul>
+
+<h2>Execution Flow</h2>
+<pre>
+User → UI → API → Queue → Worker → LLM → Files → Tests → UI
+</pre>
+</body>
+</html>
+

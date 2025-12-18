@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Install & Quickstart — AI-CloudX Agent</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<header class="container">
+    <h1>Install & Quickstart</h1>
+    <p class="subtitle">The installer script is ALWAYS the first step.</p>
+</header>
+
+<div class="layout container">
+
+    <aside class="sidebar">
+        <h3>Quick Links</h3>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="installer_guide.html">Installer Guide</a></li>
+            <li><a href="deep_dive.html">Deep Dive</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="runbooks.html">Runbooks</a></li>
+        </ul>
+    </aside>
+
+    <main class="content">
+
+        <!-- 🔥 FIRST STEP: RUN INSTALLER -->
+        <section class="card highlight">
+            <h2>🚀 Step 1 — Run the Auto-Installer (Required)</h2>
+            <p>
+                This is **the mandatory first step**.  
+                The installer automatically:
+            </p></br>
+  
+<pre>Save the script as install.sh in your project root.
+
+chmod +x install.sh
+
+To run unattended: sudo ./install.sh --non-interactive
+
+To debug interactively: sudo ./install.sh (it will prompt)
+
+To resume a partial install: sudo ./install.sh --resume
+
+To force longer retries for very flaky networks: sudo ./install.sh --ultra-mode --non-interactive
+
+Logs: /var/log/ai-agent-install-v4.log
+
+State file (resume): /var/lib/ai-agent/install_state.json
+
+Backup copies of anything replaced: /opt/aiagent-backups/
+            </pre>
+            <ul>
+                <li>Fixes broken <code>requirements.txt</code></li>
+                <li>Creates a clean Python virtualenv</li>
+                <li>Installs missing pip modules</li>
+                <li>Installs Docker if missing</li>
+                <li>Deploys Redis via Docker</li>
+                <li>Prepares the dashboard environment</li>
+                <li>Validates everything with Max-Logic flow</li>
+            </ul>
+
+            <pre>
+chmod +x installer.sh
+sudo ./installer.sh install
+            </pre>
+
+            <p>
+                After installation, edit the global env:
+            </p>
+
+            <pre>
+sudo nano /etc/ai-agent/env
+            </pre>
+
+            <p>
+                Then start the full Agent stack:
+            </p>
+
+            <pre>
+sudo ./installer.sh start
+            </pre>
+        </section>
+
+        <!-- OPTIONAL LOCAL DEV PATH -->
+        <section class="card">
+            <h2>Step 2 — Optional Manual Local Development Setup</h2>
+
+            <p>You only use this for debugging or modifying internals.  
+            The installer is still recommended even in dev.</p>
+
+            <pre>
+git clone &lt;repo&gt; ai-agent
+cd ai-agent
+
+python3 -m venv venv
+source venv/bin/activate
+
+# auto-fix corrupted requirements
+/bin/sed 's/\\\\n/\n/g' requirements.txt > clean_requirements.txt
+mv clean_requirements.txt requirements.txt
+
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+docker run -d --name redis -p 6379:6379 redis:7
+
+cd dashboard
+python app.py
+            </pre>
+
+            <p>Dashboard will run on <code>http://127.0.0.1:5000</code></p>
+        </section>
+
+        <!-- REPAIR -->
+        <section class="card">
+            <h2>Step 3 — Self-Repair Mode</h2>
+
+            <p>Use this if something breaks, or after git pull:</p>
+
+            <pre>
+sudo ./installer.sh repair
+            </pre>
+
+            <p>The repair system automatically fixes:</p>
+
+            <ul>
+                <li>Corrupted requirements</li>
+                <li>Broken virtualenvs</li>
+                <li>Missing Python modules</li>
+                <li>Redis & Docker issues</li>
+                <li>File permissions</li>
+                <li>Service restarts</li>
+            </ul>
+        </section>
+
+    </main>
+</div>
+
+<footer class="footer">
+    Installer Guide contains flags, internals, and advanced usage.
+</footer>
+
+<script src="scripts.js"></script>
+</body>
+</html>
+

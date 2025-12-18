@@ -1,0 +1,15 @@
+[Unit]
+Description=AI Agent Worker
+After=network.target
+
+[Service]
+User=aiagent
+Group=aiagent
+EnvironmentFile=/etc/ai-agent/env
+WorkingDirectory=/opt/ai-agent
+ExecStart=/opt/ai-agent/venv/bin/python scripts/worker.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

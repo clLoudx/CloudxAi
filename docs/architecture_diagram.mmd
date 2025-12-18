@@ -1,0 +1,73 @@
+%% High-Level System Architecture (Mermaid)
+
+flowchart TB
+    User[Human Operator]
+    Admin[Admin Control Plane]
+
+    subgraph ControlPlane
+        API[FastAPI Controller]
+        Signals[Signal Bus / Events]
+        Metrics[Prometheus / Metrics]
+        Logs[Structured Logs]
+    end
+
+    subgraph ExecutionPlane
+        Queue[(Durable Task Queue\n(Postgres Jobs))]
+        Worker[Task Worker]
+        StepRunner[StepRunner\n(Isolated Workspace)]
+        Artifacts[(Artifact Store)]
+    end
+
+    subgraph Governance
+        Policies[Policies & Limits]
+        Budgets[Cost / Rate Limits]
+        Audit[Audit Logs]
+    end
+
+    User --> API
+    Admin --> API
+
+    API --> Signals
+    API --> Queue
+    API --> Metrics
+    API --> Logs
+
+    Queue --> Worker
+    Worker --> StepRunner
+    StepRunner --> Artifacts
+
+    Worker --> Metrics
+    Worker --> Logs
+
+    Admin --> Policies
+    Policies --> Worker
+    Budgets --> Worker
+    Worker --> Audit
+
+
+%% ASCII mental model (included for agents that can't render Mermaid)
+
+```
+HUMAN
+  │
+  ▼
+CONTROL PLANE
+  ├─ API (submission, cancel, inspect)
+  ├─ Signals (events, state changes)
+  ├─ Metrics / Logs
+  │
+  ▼
+EXECUTION PLANE
+  ├─ Durable Queue (Postgres)
+  ├─ Worker (lease + recovery)
+  ├─ StepRunner (isolated workspace)
+  ├─ Artifacts (logs, outputs)
+  │
+  ▼
+GOVERNANCE
+  ├─ Budgets
+  ├─ Policies
+  ├─ Audit
+```
+
+"Rule: Control decides. Execution runs. Governance limits. Humans override."

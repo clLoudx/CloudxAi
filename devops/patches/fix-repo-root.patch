@@ -1,0 +1,7 @@
+*** a/installer.sh
+--- b/installer.sh
+@@
+-ROOT_DIR="$HOME/Documents/Ai-Cloudx-Dev-Agent"
++ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+*** End of patch
+

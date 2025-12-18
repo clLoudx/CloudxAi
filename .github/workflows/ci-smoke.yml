@@ -1,0 +1,26 @@
+name: CI - Smoke Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Run smoke tests (CI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x smoke_tests/*.sh || true
+
+      - name: Run smoke tests wrapper (strict)
+        run: |
+          set -euo pipefail
+          ./smoke_tests/ci_wrapper.sh k8s
+

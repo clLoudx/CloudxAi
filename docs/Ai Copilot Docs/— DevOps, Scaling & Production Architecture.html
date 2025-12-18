@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DevOps, Scaling & Production Architecture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #0b1020;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      line-height: 1.8;
+    }
+    h1 { font-size: 36px; color: #34d399; }
+    h2 { font-size: 26px; color: #6ee7b7; margin-top: 48px; }
+    h3 { font-size: 20px; color: #a7f3d0; margin-top: 28px; }
+    section {
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 44px;
+    }
+    ul { margin-left: 22px; }
+    .logic {
+      background: #000814;
+      border-left: 6px solid #22c55e;
+      padding: 18px;
+      margin: 22px 0;
+    }
+    .truth { border-left-color: #4ade80; }
+    .fail { border-left-color: #f87171; }
+    pre {
+      background: #000814;
+      color: #e5e7eb;
+      padding: 20px;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    footer {
+      margin-top: 80px;
+      opacity: 0.65;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>— DevOps, Scaling & Production Architecture</h1>
+<p><strong>Purpose:</strong> تحويل النظام من “يعمل عندي” إلى “يعمل دائمًا”</p>
+
+<section>
+<h2>INPUT — What We Are Hardening</h2>
+<div class="logic truth">
+<ul>
+  <li>Working AI Engine (STEP 3)</li>
+  <li>Usable UI (STEP 4)</li>
+  <li>Single-node runtime</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>PARSE — DevOps Real Meaning</h2>
+<div class="logic">
+<p>DevOps is NOT:</p>
+<ul>
+  <li>CI badges</li>
+  <li>Fancy dashboards</li>
+</ul>
+<p>DevOps IS:</p>
+<ul>
+  <li>Repeatable deployments</li>
+  <li>Safe upgrades</li>
+  <li>Fast recovery from failure</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>CROSS-REFERENCE — Proven Production Patterns</h2>
+<div class="logic">
+<ul>
+  <li>12-Factor App principles</li>
+  <li>Kubernetes workload isolation</li>
+  <li>GitOps (declarative infra)</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>INFER — Mandatory Production Components</h2>
+<ul>
+  <li>Containerization</li>
+  <li>Secrets Management</li>
+  <li>Health Checks</li>
+  <li>Logs & Metrics</li>
+  <li>Rollback Strategy</li>
+</ul>
+</section>
+
+<section>
+<h2>ARCHITECTURE — Production Stack Map</h2>
+<pre><code>┌───────────────────────────────────────────┐
+│ Load Balancer / Ingress                   │
+├───────────────────────────────────────────┤
+│ Kubernetes Cluster                        │
+│ ┌───────────────────────────────────────┐ │
+│ │ AI Core Pods                           │ │
+│ │ UI Pods                               │ │
+│ │ Worker / Executor Pods                │ │
+│ └───────────────────────────────────────┘ │
+├───────────────────────────────────────────┤
+│ Observability                             │
+│ Prometheus • Logs • Alerts               │
+└───────────────────────────────────────────┘
+</code></pre>
+</section>
+
+<section>
+<h2>EXECUTION — Container & Deployment Logic</h2>
+<div class="logic truth">
+<ul>
+  <li>Each service = one container</li>
+  <li>No shared state inside containers</li>
+  <li>Config via environment variables</li>
+</ul>
+</div>
+
+<pre><code>docker build -t ai-copilot-core .
+kubectl apply -f deployment.yaml
+</code></pre>
+</section>
+
+<section>
+<h2>TEST — Failure Scenarios</h2>
+<div class="logic fail">
+<ul>
+  <li>Pod crashes → auto restart</li>
+  <li>Bad deploy → rollback</li>
+  <li>High load → scale pods</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>VALIDATE — Production Readiness Criteria</h2>
+<div class="logic truth">
+<ul>
+  <li>No manual server SSH</li>
+  <li>Deploy from Git only</li>
+  <li>System survives crashes</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>OUTPUT — What STEP 5 Produces</h2>
+<div class="logic truth">
+<ul>
+  <li>Production-grade AI Copilot</li>
+  <li>Scalable infrastructure</li>
+  <li>Base for SaaS monetization</li>
+</ul>
+</div>
+</section>
+
+<footer>
+<p>STEP 5 — DevOps & Scaling · Max-Logic · Truth-Only</p>
+</footer>
+
+</body>
+</html>
+

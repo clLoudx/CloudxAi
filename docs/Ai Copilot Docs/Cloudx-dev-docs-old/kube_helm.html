@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AI-Agent — Kubernetes & Helm Deployment Guide</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#071021;
+      --muted:#9fb0c6;
+      --accent:#60a5fa;
+      --accent2:#2dd4bf;
+      --card:#071422;
+      --yellow:#f59e0b;
+      --danger:#ff6b6b;
+      --white:#e6eef6;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#051124 0%,#081327 100%);color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    .wrap{max-width:1150px;margin:28px auto;padding:24px;}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+    header h1{font-size:26px;margin:0}
+    header p{margin:0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns: 1fr 360px; gap:18px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:18px; box-shadow:0 8px 30px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.03)}
+    .panel{background:var(--panel); padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    h2{color:var(--accent);margin:6px 0 12px}
+    h3{color:var(--accent2);margin:10px 0}
+    pre{background:#021427;padding:12px;border-radius:8px;overflow:auto;border:1px solid rgba(255,255,255,0.03);font-size:0.9rem;color:#dff3ff;}
+    code{background:rgba(255,255,255,0.02);padding:2px 6px;border-radius:4px;color:var(--white);}
+    ul{color:var(--muted)}
+    .note{background:rgba(45,212,191,0.04);border-left:4px solid var(--accent2);padding:10px;border-radius:6px;color:#c7fff6;margin:12px 0}
+    .warn{background:rgba(255,99,71,0.04);border-left:4px solid var(--danger);padding:10px;border-radius:6px;color:#ffdede;margin:12px 0}
+    table{width:100%;border-collapse:collapse;margin:10px 0}
+    table th,table td{padding:8px 10px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);color:var(--muted)}
+    .toc{font-size:0.95rem}
+    .kbd{background:#021427;padding:2px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-family:monospace}
+    footer{margin-top:18px;color:var(--muted);text-align:center;font-size:0.9rem}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>AI-Agent — Kubernetes & Helm Deployment</h1>
+        <p>Practical, production-minded guide: Helm charts, cert-manager, ingress, Redis, probes, GitHub Actions & GitOps options.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <main class="card">
+        <h2>Overview</h2>
+        <p>This document walks you from <strong>kubectl/helm</strong> prerequisites through a safe, repeatable Helm deployment for AI-Agent. It includes values examples, TLS via cert-manager, readiness/liveness probes, docker imagePullSecret handling, and CI/CD deployment examples (GitHub Actions & Flux). Follow sections in order; copy-paste snippets into your environment and adjust domain/registry details where noted.</p>
+
+        <h3 id="prereqs">1. Prerequisites</h3>
+        <ul>
+          <li>kubectl configured for the target cluster (<span class="kbd">~/.kube/config</span> or <span class="kbd">--kubeconfig</span> override).</li>
+          <li>Helm 3 (v3.8+) installed.</li>
+          <li>Access to a container registry (Docker Hub / GHCR / private registry) and imagePullSecrets if private.</li>
+          <li>Domain DNS control for Let's Encrypt (HTTP-01 or DNS-01).</li>
+        </ul>
+
+        <h3 id="setup-helm">2. Install Helm & Repos</h3>
+        <pre>
+# Install Helm (if missing)
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# Add required Helm repos
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add jetstack https://charts.jetstack.io
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+        </pre>
+
+        <h3 id="install-ingress">3. Install ingress-nginx (recommended)</h3>
+        <pre>
+# create namespace for the controller
+kubectl create namespace ingress-nginx --dry-run=client -o yaml | kubectl apply -f -
+
+# install ingress controller
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --wait --timeout 10m
+        </pre>
+        <div class="note">Use cloud controller-specific settings if required (service.type=LoadBalancer annotations). You may enable externalTrafficPolicy or hostNetwork for advanced setups.</div>
+
+        <h3 id="install-cert-manager">4. Install cert-manager & Create Issuer</h3>
+        <pre>
+# Install CRDs (cert-manager recommended way)
+kubectl apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.crds.yaml
+
+# Install cert-manager via Helm
+kubectl create namespace cert-manager --dry-run=client -o yaml | kubectl apply -f -
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --set installCRDs=false \
+  --wait --timeout 10m
+
+# Create a ClusterIssuer for Let's Encrypt (production)
+cat <<EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@example.com            # <--- CHANGE
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+EOF
+        </pre>
+        <div class="warn">For wildcard certificates use DNS-01 solver and provider credentials (Cloudflare/Route53/DO). Don't use production issuer for tests (use staging URL).</div>
+
+        <h3 id="redis">5. Install Redis (Helm) — recommended bitnami</h3>
+        <pre>
+# Recommended: run Redis as chart (or use managed Redis)
+helm upgrade --install aiagent-redis bitnami/redis \
+  --namespace aiagent --create-namespace \
+  --set architecture=standalone \
+  --set auth.enabled=false \
+  --set persistence.enabled=false \
+  --wait --timeout 5m
+        </pre>
+        <p>For production enable <code>auth.enabled=true</code> and persistence and set resource requests/limits.</p>
+
+        <h3 id="deploy-helm-chart">6. Deploy AI-Agent Helm Chart</h3>
+        <p>Place the chart directory at <code>devops/helm/aiagent</code> (multi-chart structure supported: aiagent-web, aiagent-worker, aiagent). Use values-production.yaml for production overrides.</p>
+        <pre>
+# Example: deploy aiagent chart
+helm upgrade --install aiagent ./devops/helm/aiagent \
+  --namespace aiagent --create-namespace \
+  -f ./devops/helm/aiagent/values-production.yaml \
+  --wait --timeout 10m
+        </pre>
+
+        <h3 id="values-examples">7. Key values (values-production.yaml) — recommended fields</h3>
+        <pre>
+ingress:
+  enabled: true
+  hosts:
+    - host: ai.example.com
+      paths: ["/"]
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    - secretName: aiagent-tls
+      hosts:
+        - ai.example.com
+
+image:
+  repository: ghcr.io/yourorg/aiagent-web
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+  imagePullSecrets:
+    - name: my-registry-secret
+
+web:
+  replicaCount: 2
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 20
+        </pre>
+
+        <h3 id="imagepull">8. imagePullSecrets & private registries</h3>
+        <pre>
+# create docker registry secret for namespace
+kubectl create secret docker-registry my-registry-secret \
+  --docker-server=https://ghcr.io \
+  --docker-username=YOUR_USERNAME \
+  --docker-password=YOUR_TOKEN \
+  --docker-email=you@example.com \
+  -n aiagent
+
+# Ensure ServiceAccount uses it:
+kubectl patch serviceaccount default -n aiagent \
+  -p '{"imagePullSecrets":[{"name":"my-registry-secret"}]}'
+        </pre>
+
+        <h3 id="probes-health">9. Health checks & Probes (k8s readiness/liveness)</h3>
+        <p>Make sure your Flask/HTTP application exposes <code>/healthz</code> (200). Example Flask snippet:</p>
+        <pre>
+# backend_snippets/healthz_flask.py
+from flask import Flask, jsonify
+app = Flask(__name__)
+
+@app.route("/healthz")
+def healthz():
+    return jsonify({"status":"ok"}), 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
+        </pre>
+
+        <h3 id="k8s-probe-snippet">k8s probe YAML snippet (templates)</h3>
+        <pre>
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 20
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+        </pre>
+
+        <h3 id="ci-cd">10. GitHub Actions — Helm deploy (CI/CD)</h3>
+        <p>Example GitHub Actions workflow (<code>.github/workflows/helm-deploy.yml</code>):</p>
+        <pre>
+name: Deploy Helm to Kubernetes
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.3'
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+      - name: Configure Kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+          mkdir -p $HOME/.kube
+          mv kubeconfig $HOME/.kube/config
+      - name: Helm Upgrade/Install
+        run: |
+          helm repo update
+          helm upgrade --install aiagent devops/helm/aiagent \
+            -n aiagent --create-namespace \
+            -f devops/helm/aiagent/values-production.yaml \
+            --wait --timeout 10m
+      - name: Run post-deploy smoke tests
+        run: ./devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 120
+        </pre>
+
+        <div class="note">Store kubeconfig in GitHub Actions secret <code>KUBE_CONFIG</code> (base64 or raw) and use repository secrets for registry credentials.</div>
+
+        <h3 id="flux">11. GitOps alternative — FluxCD</h3>
+        <p>Flux provides GitOps: push chart/values to a Git repo and Flux reconciles the cluster. High-level steps:</p>
+        <ol>
+          <li>Install Flux CLI / bootstrap Flux on the cluster with access to your Git repository.</li>
+          <li>Add a <code>HelmRelease</code> object referencing your chart (local/helm repo).</li>
+          <li>Flux will maintain the release and auto-rollback on drift (with policies).</li>
+        </ol>
+        <pre>
+# flux helmrelease example (simplified)
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: aiagent
+  namespace: aiagent
+spec:
+  chart:
+    spec:
+      chart: ./devops/helm/aiagent
+  valuesFrom:
+  - kind: GitRepository
+    name: aiagent-values
+        </pre>
+
+        <h3 id="tests">12. Post-deploy smoke tests</h3>
+        <pre>
+# devops/tools/post_deploy_smoke.sh (usage)
+# ./post_deploy_smoke.sh <namespace-or-host> <service-or-pod-label> <path> <port> <timeout_seconds>
+./devops/tools/post_deploy_smoke.sh aiagent aiagent-web /healthz 8000 120
+        </pre>
+
+        <h3 id="troubleshooting">13. Troubleshooting</h3>
+        <ul>
+          <li><strong>Ingress has no IP:</strong> check service type and cloud LB provisioning. <code>kubectl -n ingress-nginx get svc</code>.</li>
+          <li><strong>Certificate not Ready:</strong> <code>kubectl -n cert-manager describe certificate</code>, check challenges and DNS.</li>
+          <li><strong>CrashLoopBackOff:</strong> <code>kubectl -n aiagent describe pod &lt;pod&gt;</code> and <code>kubectl -n aiagent logs &lt;pod&gt;</code>.</li>
+          <li><strong>ImagePullBackOff:</strong> verify image name/tag and registry auth/secret.</li>
+        </ul>
+
+        <h3 id="security">14. Security & production-ops tips</h3>
+        <ul>
+          <li>Pin images by digest for releases: <code>image: sha256:...</code></li>
+          <li>Enable network policies to restrict traffic between pods.</li>
+          <li>Use ReadOnlyRootFilesystem and non-root users in containers.</li>
+          <li>Enable resource requests/limits and HPA for web/worker tiers.</li>
+          <li>Set PodDisruptionBudgets for critical services.</li>
+        </ul>
+
+        <h3 id="appendix">Appendix: Useful commands</h3>
+        <pre>
+# check pods, events and describe
+kubectl -n aiagent get pods
+kubectl -n aiagent describe pod <pod>
+kubectl -n aiagent logs <pod> -c <container>
+
+# check ingress
+kubectl -n aiagent get ingress
+kubectl -n aiagent describe ingress aiagent-ingress
+
+# check cert-manager
+kubectl -n cert-manager get cert,issuer,clusterissuer
+kubectl -n cert-manager describe challenge
+        </pre>
+
+      </main>
+
+      <aside class="card panel">
+        <h3 class="toc">Quick TOC</h3>
+        <ol class="toc">
+          <li><a href="#prereqs">Prereqs</a></li>
+          <li><a href="#setup-helm">Install Helm</a></li>
+          <li><a href="#install-ingress">Install Ingress</a></li>
+          <li><a href="#install-cert-manager">Install cert-manager</a></li>
+          <li><a href="#redis">Install Redis</a></li>
+          <li><a href="#deploy-helm-chart">Deploy Chart</a></li>
+          <li><a href="#values-examples">Values</a></li>
+          <li><a href="#imagepull">imagePullSecrets</a></li>
+          <li><a href="#probes-health">Probes</a></li>
+          <li><a href="#ci-cd">CI/CD</a></li>
+          <li><a href="#flux">Flux</a></li>
+          <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+
+        <div class="note">
+          <strong>Checklist before production deploy</strong>
+          <ul>
+            <li>Domain DNS points to Ingress LB</li>
+            <li>cert-manager issuer configured</li>
+            <li>Images built and stored in registry</li>
+            <li>Secrets (env, DB, API keys) in k8s secrets</li>
+            <li>Resource requests/limits set</li>
+          </ul>
+        </div>
+
+        <h3>Helm Cheat Sheet</h3>
+        <table>
+          <tr><th>Command</th><th>Purpose</th></tr>
+          <tr><td><code>helm upgrade --install</code></td><td>Idempotent install/upgrade</td></tr>
+          <tr><td><code>helm repo add / update</code></td><td>Manage chart repos</td></tr>
+          <tr><td><code>helm lint ./chart</code></td><td>Validate chart</td></tr>
+        </table>
+
+        <h3>Security Reminder</h3>
+        <p class="warn">Never commit secrets (cert keys, kubeconfigs, registry passwords) to Git. Use GitHub secrets, SealedSecrets, or SOPS for encryption and automation.</p>
+
+        <h3>Further Reading</h3>
+        <ul>
+          <li><a href="https://helm.sh/docs/">Helm docs</a></li>
+          <li><a href="https://cert-manager.io/docs/">cert-manager docs</a></li>
+          <li><a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes">Kubernetes Probes</a></li>
+          <li><a href="https://fluxcd.io/">Flux CD</a></li>
+        </ul>
+      </aside>
+    </div>
+
+    <footer>
+      <div>Generated guidance — adapt domain, registry and security details before running in production. Use this as a deterministic, safe pattern for Helm-based deployments.</div>
+    </footer>
+  </div>
+</body>
+</html>
+

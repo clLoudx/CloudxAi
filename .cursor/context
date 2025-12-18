@@ -1,0 +1,19 @@
+# Cursor context for AiCloudxAgent repair
+repo_root: ~/AiCloudxAgent
+primary_contact: cloudx
+env:
+  preferred_install_path: /opt/ai-agent
+  canonical_helm: devops/helm/aiagent
+  canonical_healthcheck: devops/tools/healthcheck.sh
+  canonical_smoke_tests: devops/smoke_tests/
+  canonical_systemd: devops/systemd/aiagent.service
+priorities:
+  - fix_path_conflict
+  - consolidate_charts
+  - merge_healthcheck
+  - merge_smoke_tests
+  - normalize_systemd
+  - create_installers
+  - add_ci_patches
+assume_safe_mode: true
+non_interactive: true

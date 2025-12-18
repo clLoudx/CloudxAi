@@ -1,0 +1,59 @@
+name: Enterprise PR Guard
+
+on:
+  pull_request:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Phase Declaration Check
+        run: |
+          PR_BODY_FILE=${GITHUB_EVENT_PATH}
+          if ! jq -r '.pull_request.body' "$PR_BODY_FILE" | grep -E "Phase[- ]?[0-9]" -q; then
+            echo "ERROR: PR body must declare Phase-X (e.g., PHASE-6.2)" && exit 1
+          fi
+
+      - name: Roadmap Compliance
+        run: |
+          if [ ! -f docs/ENTERPRISE_ROADMAP.md ]; then echo "ERROR: docs/ENTERPRISE_ROADMAP.md missing" && exit 1; fi
+
+      - name: Tests Mention Check
+        run: |
+          if ! git grep -n "pytest\|unittest" || [ $? -ne 0 ]; then
+            echo "ERROR: repository appears to have no tests referenced (pytest/unittest)" && exit 1
+          fi
+
+      - name: Observability Check
+        run: |
+          if ! git grep -n "prometheus\|opentelemetry\|otel" || [ $? -ne 0 ]; then
+            echo "ERROR: observability hooks (prometheus/opentelemetry) not found" && exit 1
+          fi
+
+      - name: Migration Safety Check
+        run: |
+          if ! git grep -n "migration\|schema_migrations\|alembic" || [ $? -ne 0 ]; then
+            echo "WARNING: migration framework not detected; ensure migrations are handled" && exit 1
+          fi
+
+      - name: Secrets Scan (basic)
+        run: |
+          if git grep -n "API_KEY\|SECRET\|TOKEN\|-----BEGIN PRIVATE KEY-----"; then
+            echo "ERROR: Potential secret detected in repo" && exit 1
+          fi
+
+      - name: Rollback Presence Check
+        run: |
+          PR_BODY_FILE=${GITHUB_EVENT_PATH}
+          if ! jq -r '.pull_request.body' "$PR_BODY_FILE" | grep -i "rollback" -q; then
+            echo "ERROR: PR body must include a Rollback plan" && exit 1
+          fi
+
+      - name: Human Checklist Enforcement
+        run: |
+          echo "Ensure the following are present in PR body: Phase, Scope, Tests, Observability, Rollback, Threat Review, Ops Sign-off"
+          jq -r '.pull_request.body' "$GITHUB_EVENT_PATH" | sed -n '1,200p'
+          # This step is informational; the previous checks enforce the hard gates.

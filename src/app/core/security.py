@@ -8,9 +8,54 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 import hashlib
 import bcrypt
+import uuid
 from jose import JWTError, jwt
 
 from .config import Settings, get_settings
+
+
+def create_jwt_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None, settings: Optional[Settings] = None) -> str:
+    """
+    Create a JWT token with the given data.
+
+    Args:
+        data: Data to encode
+        expires_delta: Optional expiration time
+        settings: Optional settings
+
+    Returns:
+        JWT token string
+    """
+    if settings is None:
+        settings = get_settings()
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    return encoded_jwt
+
+
+def decode_jwt_token(token: str, settings: Optional[Settings] = None) -> Dict[str, Any]:
+    """
+    Decode and verify JWT token.
+
+    Args:
+        token: JWT token string
+        settings: Optional settings
+
+    Returns:
+        Decoded payload
+
+    Raises:
+        JWTError: If token is invalid
+    """
+    if settings is None:
+        settings = get_settings()
+    payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+    return payload
 
 
 def verify_password(plain_password: str, hashed_password: bytes) -> bool:
@@ -74,13 +119,25 @@ def create_access_token(data: Dict[str, Any], settings: Optional[Settings] = Non
     """
     if settings is None:
         settings = get_settings()
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
 
-    to_encode.update({"exp": expire, "type": "access"})
+    now = datetime.now(timezone.utc)
+    to_encode = data.copy()
+
+    if expires_delta:
+        expire = now + expires_delta
+    else:
+        expire = now + timedelta(minutes=settings.jwt_access_token_expire_minutes)
+
+    # Add trust claims
+    to_encode.update({
+        "exp": expire,
+        "type": "access",
+        "iss": settings.jwt_issuer or "ai-cloudx-auth",
+        "aud": settings.jwt_audience or "ai-cloudx-api",
+        "iat": now,
+        "nbf": now,
+    })
+
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
@@ -101,6 +158,12 @@ def create_refresh_token(data: Dict[str, Any], settings: Optional[Settings] = No
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days)
     to_encode.update({"exp": expire, "type": "refresh"})
+    # Add JTI if not present
+    if "jti" not in to_encode:
+        to_encode["jti"] = str(uuid.uuid4())
+    # Add session ID if not present
+    if "sid" not in to_encode:
+        to_encode["sid"] = str(uuid.uuid4())
     encoded_jwt = jwt.encode(to_encode, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
     return encoded_jwt
 
@@ -120,7 +183,22 @@ def verify_token(token: str, token_type: str = "access", settings: Optional[Sett
     if settings is None:
         settings = get_settings()
     try:
-        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        # For access tokens, validate trust claims
+        if token_type == "access":
+            expected_issuer = settings.jwt_issuer or "ai-cloudx-auth"
+            expected_audience = settings.jwt_audience or "ai-cloudx-api"
+            payload = jwt.decode(
+                token,
+                settings.jwt_secret_key,
+                algorithms=[settings.jwt_algorithm],
+                issuer=expected_issuer,
+                audience=expected_audience,
+                options={"require": ["exp", "iss", "aud", "iat", "nbf"]}
+            )
+        else:
+            # For refresh tokens, only basic validation
+            payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+
         if payload.get("type") != token_type:
             return None
         return payload
