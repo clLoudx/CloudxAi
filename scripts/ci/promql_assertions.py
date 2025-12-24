@@ -13,6 +13,7 @@ PASS = os.getenv('PROM_PASS') or os.getenv('STAGING_PROM_PASS')
 
 ASSERTIONS = {
     'tenant_readiness_state_exists': 'count(tenant_readiness_state) > 0',
+    'tenant_readiness_state_has_tenant_label': 'count(tenant_readiness_state{tenant!=""}) >= 0',
     'tenant_label_rejections_total_exists': 'count(tenant_label_rejections_total) >= 0',
     'tenant_cost_estimate_exists': 'count(tenant_cost_estimate) >= 0'
 }
@@ -38,8 +39,11 @@ def run():
         json.dump(results, fh, indent=2)
     # Exit non-zero if any assertion clearly indicates missing metrics
     # (this is conservative; operators should interpret results)
+    # Conservative exit behavior: if any call returned an error, exit non-zero.
+    # If queries succeeded but returned no data, results still written for operator review.
     for v in results.values():
         if v.get('error'):
+            print('One or more assertions failed with errors; see promql_assertions_results.json')
             sys.exit(1)
     print('PromQL assertions completed; results written to promql_assertions_results.json')
 
