@@ -19,11 +19,13 @@ Scope summary:
 - Update canonical closure artifact to record coding-phase progress: `PHASE_MULTI_TENANT_READINESS_CLOSED.md`
 
 Merge requirements (MANDATORY):
+
 - CI must be green for all observability tests and sanity checks
 - Do NOT merge unless CI is green
 - No changes to readiness semantics or metric names introduced by the closed phase
 
 Reviewer guidance:
+
 - Confirm that `/readyz` behavior is unchanged
 - Confirm that `/tenant/<tenant>/cost` is read-only and does not affect readiness
 - Confirm cardinality guard is enforced (env: MAX_TENANT_LABELS) and that `tenant_label_rejections_total` exists
@@ -31,6 +33,7 @@ Reviewer guidance:
 Labels to apply: `beta-candidate`, `observability`, `tenant-safe`, `ci-required`
 
 Automated checks:
+
 - Observability CI workflow will run tests and report status. Chaos tests are opt-in and not run by default.
 
 This PR was prepared by the local GitHub agent. Please open the PR at the URL below and paste this body (or attach it via the web UI):
