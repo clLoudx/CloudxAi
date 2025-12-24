@@ -1,0 +1,49 @@
+name: "Beta: Daily Passive Monitor (draft-enabled)"
+
+# This scheduled workflow runs the passive beta monitor script daily and
+# uploads the observations and incident logs as artifacts. It is designed to
+# be safe by default: the job will only run if the repository secret
+# `ENABLE_BETA_MONITOR` is set to the literal string `true`. Otherwise the
+# job will skip. The workflow also supports manual dispatch.
+
+on:
+  schedule:
+    - cron: '0 0 * * *'    # daily at 00:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  run-beta-monitor:
+    # Guard: only run if operators explicitly enable via repo secret
+    if: ${{ secrets.ENABLE_BETA_MONITOR == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Run beta monitor (passive)
+        id: run_monitor
+        run: |
+          python3 scripts/beta_monitor.py || true
+
+      - name: Upload observations artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beta-observations
+          path: |
+            BETA_OBSERVATIONS.md
+            BETA_INCIDENT_LOG.md
+
+      - name: Post-run note
+        if: always()
+        run: |
+          echo "Beta monitor run completed. If no artifact was uploaded, set secret ENABLE_BETA_MONITOR=true in repository settings to enable runs."
