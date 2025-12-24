@@ -1,0 +1,41 @@
+name: "Staging: Observability Nightly Scrape (draft)"
+
+# DRAFT workflow: This workflow is intentionally created as staging-only and
+# manual by default. It will NOT run on push unless operators enable schedule
+# or set the RUN_STAGING_SCRAPE variable in repository settings. This is a
+# draft PR artifact; do not merge without human approval.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  promql_assertions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run PromQL assertions (staging)
+        env:
+          PROM_URL: ${{ secrets.STAGING_PROM_URL }}
+          PROM_USER: ${{ secrets.STAGING_PROM_USER }}
+          PROM_PASS: ${{ secrets.STAGING_PROM_PASS }}
+        run: |
+          python3 scripts/ci/promql_assertions.py
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promql-assertions-results
+          path: promql_assertions_results.json
