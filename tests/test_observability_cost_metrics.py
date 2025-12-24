@@ -4,7 +4,27 @@ This file can be executed both under pytest and directly via python. It
 contains simple assertions and a minimal runner so CI can run pytest and
 local constrained environments can execute the file for quick checks.
 """
-from ai_agent.observability.cost_metrics import TenantCostMetrics, CardinalityError
+import os
+import sys
+
+# Ensure repo root is on sys.path so tests can import local packages when run
+# as `python tests/...` (the runner sets sys.path[0] to the tests dir).
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+try:
+    from ai_agent.observability.cost_metrics import TenantCostMetrics, CardinalityError
+except Exception:
+    # If importing the package triggers heavy deps (pydantic, etc.), try a
+    # direct-file import so tests can run in constrained environments.
+    import importlib.util
+
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    module_path = os.path.join(repo_root, "ai_agent", "observability", "cost_metrics.py")
+    spec = importlib.util.spec_from_file_location("cost_metrics", module_path)
+    cost_metrics = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cost_metrics)
+    TenantCostMetrics = cost_metrics.TenantCostMetrics
+    CardinalityError = cost_metrics.CardinalityError
 
 
 def test_update_and_get():
