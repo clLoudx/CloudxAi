@@ -1,26 +1,91 @@
 {
   "id": null,
-  "title": "Tenant Readiness Overview",
+  "title": "Tenant Readiness Overview (v0.9.0-beta)",
+  "templating": {
+    "list": [
+      {
+        "name": "tenant",
+        "type": "query",
+        "label": "Tenant",
+        "query": "label_values(tenant_readiness_state, tenant)",
+        "refresh": 2,
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
   "panels": [
     {
-      "type": "graph",
-      "title": "Tenant Readiness State (example)",
+      "type": "timeseries",
+      "title": "Tenant Readiness State",
+      "id": 1,
       "targets": [
         {
-          "expr": "tenant_readiness_state",
-          "legendFormat": "{{tenant}}",
+          "expr": "tenant_readiness_state{tenant=\"$tenant\"}",
+          "legendFormat": "$tenant",
           "refId": "A"
         }
-      ]
+      ],
+      "description": "Shows the readiness state for the selected tenant (1=ready, 0=not ready). This is additive and must not be used to infer global readiness."
+    },
+    {
+      "type": "timeseries",
+      "title": "Tenant Cost Estimate (current)",
+      "id": 2,
+      "targets": [
+        {
+          "expr": "tenant_cost_estimate{tenant=\"$tenant\"}",
+          "legendFormat": "cost",
+          "refId": "B"
+        }
+      ],
+      "description": "Estimated cost for the selected tenant. Read-only observational metric."
+    },
+    {
+      "type": "timeseries",
+      "title": "Cost Trend (1h increase)",
+      "id": 3,
+      "targets": [
+        {
+          "expr": "increase(tenant_cost_estimate{tenant=\"$tenant\"}[1h])",
+          "legendFormat": "1h_increase",
+          "refId": "C"
+        }
+      ],
+      "description": "Shows cost increase over a rolling 1 hour window for the selected tenant."
     },
     {
       "type": "stat",
-      "title": "Cardinality Rejections",
+      "title": "Cardinality Rejections (5m)",
+      "id": 4,
       "targets": [
-        { "expr": "increase(tenant_label_rejections_total[5m])", "refId": "B" }
-      ]
+        {
+          "expr": "increase(tenant_label_rejections_total[5m])",
+          "refId": "D"
+        }
+      ],
+      "description": "Counts tenant label rejections due to cardinality limits; if this is non-zero, investigate onboarding or increase MAX_TENANT_LABELS cautiously."
+    },
+    {
+      "type": "timeseries",
+      "title": "Safety Backstop — Global vs Tenant",
+      "id": 5,
+      "targets": [
+        {
+          "expr": "readiness_state",
+          "legendFormat": "global_readiness",
+          "refId": "E"
+        },
+        {
+          "expr": "tenant_readiness_state{tenant=\"$tenant\"}",
+          "legendFormat": "tenant_readiness",
+          "refId": "F"
+        }
+      ],
+      "description": "Compare global readiness to the selected tenant. Tenants must not influence global readiness; differences are expected and monitored."
     }
   ],
   "schemaVersion": 26,
-  "version": 1
+  "version": 2,
+  "annotations": {"list": []}
 }
