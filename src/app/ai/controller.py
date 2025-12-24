@@ -76,6 +76,8 @@ class AISystemController:
         self.input_observers: List[Callable] = []
         self.output_collectors: List[Callable] = []
         self._running = False
+        # Optional Ollama client instance that can be injected by the app
+        self.ollama_client = None
 
     async def start(self):
         """Start the controller"""
@@ -214,7 +216,8 @@ class AISystemController:
 
     async def _dispatch_to_ollama(self, task: Task, agent: AgentType):
         """Dispatch task to Ollama for inference"""
-        from .ollama_client import ollama_client, InferenceRequest
+        # Import factory/language types locally to avoid import-time side-effects
+        from .ollama_client import InferenceRequest, create_ollama_client
 
         try:
             # Convert task to Ollama inference request
@@ -232,8 +235,11 @@ class AISystemController:
 
             logger.info("Dispatching to Ollama", task_id=task.id, agent=agent.value)
 
+            # Get the client (use injected instance if available, otherwise create one)
+            client = self.ollama_client or create_ollama_client()
+
             # Call Ollama
-            response = await ollama_client.generate(request)
+            response = await client.generate(request)
 
             # Create result
             result = TaskResult(

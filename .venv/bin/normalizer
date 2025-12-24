@@ -1,4 +1,4 @@
-#!/home/cloudx/AiCloudxAgent/.venv/bin/python3
+#!/workspaces/AiCloudxAgent/.venv/bin/python
 import sys
 from charset_normalizer.cli import cli_detect
 if __name__ == '__main__':

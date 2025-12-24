@@ -1,0 +1,31 @@
+groups:
+- name: tenant-slos
+  rules:
+  - alert: TenantReadinessBreach
+    expr: |
+      (tenant_readiness_state == 0)
+    for: 2m
+    labels:
+      severity: page
+    annotations:
+      summary: "Tenant {{ $labels.tenant }} readiness is false"
+      description: "Tenant {{ $labels.tenant }} readiness gauge is 0 for over 2 minutes."
+
+  - alert: TenantFlapping
+    expr: |
+      increase(tenant_readiness_transitions_total[10m]) > 10
+    for: 0m
+    labels:
+      severity: ticket
+    annotations:
+      summary: "Tenant {{ $labels.tenant }} is flapping"
+      description: "High number of readiness transitions for tenant {{ $labels.tenant }}"
+
+  - alert: TenantLabelCardinalityExceeded
+    expr: tenant_label_rejections_total > 0
+    for: 1m
+    labels:
+      severity: security
+    annotations:
+      summary: "Tenant label cardinality limit exceeded"
+      description: "One or more tenant label creations were rejected due to cardinality limit."

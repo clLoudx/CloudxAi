@@ -23,13 +23,8 @@ except ImportError:
     OLLAMA_AVAILABLE = False
     logger.warning("Ollama package not available - using mock mode")
 
-try:
-    from prometheus_client import Counter, Histogram
-    AI_OLLAMA_REQUESTS = Counter('ai_ollama_requests_total', 'Total Ollama requests', ['model', 'status'])
-    AI_OLLAMA_LATENCY = Histogram('ai_ollama_request_duration_seconds', 'Ollama request latency', ['model'])
-except ImportError:
-    AI_OLLAMA_REQUESTS = None
-    AI_OLLAMA_LATENCY = None
+# Metrics are registered lazily via the metrics helper to avoid duplicate
+# registration at import time (which can happen during test collection).
 
 
 class OllamaConfig:
@@ -108,10 +103,12 @@ class OllamaClient:
     - Failover-ready abstraction
     """
 
-    def __init__(self, config: OllamaConfig):
+    def __init__(self, config: OllamaConfig, metrics: tuple | None = None):
         self.config = config
         self._client = None
         self._healthy = False
+        # metrics is a tuple: (counter, histogram)
+        self._metrics = metrics or (None, None)
 
         if not OLLAMA_AVAILABLE:
             logger.warning("Ollama not available - operating in mock mode")
@@ -238,8 +235,10 @@ class OllamaClient:
             try:
                 logger.debug("Starting Ollama inference", model=model, attempt=attempt + 1)
 
-                if AI_OLLAMA_LATENCY:
-                    with AI_OLLAMA_LATENCY.labels(model=model).time():
+                # Use instance metrics if available (may be None in tests)
+                _, latency = self._metrics
+                if latency:
+                    with latency.labels(model=model).time():
                         response = await asyncio.wait_for(
                             self._client.chat(**ollama_request),
                             timeout=timeout
@@ -265,8 +264,9 @@ class OllamaClient:
 
                 finish_reason = response.get('done_reason')
 
-                if AI_OLLAMA_REQUESTS:
-                    AI_OLLAMA_REQUESTS.labels(model=model, status="success").inc()
+                counter, _ = self._metrics
+                if counter:
+                    counter.labels(model=model, status="success").inc()
 
                 logger.info("Ollama inference completed", model=model, processing_time=processing_time)
 
@@ -283,8 +283,9 @@ class OllamaClient:
                 logger.warning("Ollama inference timeout", model=model, attempt=attempt + 1, timeout=timeout)
 
                 if attempt == self.config.max_retries:
-                    if AI_OLLAMA_REQUESTS:
-                        AI_OLLAMA_REQUESTS.labels(model=model, status="timeout").inc()
+                    counter, _ = self._metrics
+                    if counter:
+                        counter.labels(model=model, status="timeout").inc()
                     raise OllamaTimeoutError(f"Inference timeout after {processing_time:.2f}s")
 
             except Exception as e:
@@ -292,8 +293,9 @@ class OllamaClient:
                 logger.warning("Ollama inference failed", model=model, attempt=attempt + 1, error=str(e))
 
                 if attempt == self.config.max_retries:
-                    if AI_OLLAMA_REQUESTS:
-                        AI_OLLAMA_REQUESTS.labels(model=model, status="error").inc()
+                    counter, _ = self._metrics
+                    if counter:
+                        counter.labels(model=model, status="error").inc()
                     raise OllamaInferenceError(f"Inference failed: {e}")
 
                 # Wait before retry
@@ -385,6 +387,24 @@ class OllamaClient:
         )
 
 
-# Global client instance
-_default_config = OllamaConfig()
-ollama_client = OllamaClient(_default_config)
+def create_ollama_client(config: OllamaConfig | None = None):
+    """Factory to create an OllamaClient with metrics registered lazily.
+
+    Avoids import-time side-effects by registering metrics here and
+    passing them into the client instance.
+    """
+    cfg = config or OllamaConfig()
+    try:
+        from ..metrics import register_ollama_metrics
+
+        metrics = register_ollama_metrics()
+    except Exception:
+        metrics = (None, None)
+
+    return OllamaClient(cfg, metrics=metrics)
+
+
+# Backwards-compatible module-level name. Keep as None to avoid import-time
+# initialization; callers should use create_ollama_client() or obtain the
+# client from app.state/controller.ollama_client when available.
+ollama_client = None

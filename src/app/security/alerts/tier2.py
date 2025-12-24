@@ -37,9 +37,16 @@ class ExcessiveLoginFailuresRule(RedisAlertRule):
         # Check per-user threshold
         if event.user_id:
             user_key = self.key("user", event.user_id)
-            user_triggered = await self.check_threshold(user_key, self.user_threshold, self.window_seconds)
-            if user_triggered:
-                user_count = await self.get_counter_value(user_key)
+            # check_threshold may return an int (count) or 0/False
+            user_count = await self.check_threshold(user_key, self.user_threshold, self.window_seconds)
+            if user_count:
+                # If check_threshold returned a numeric count, use it; otherwise query the counter
+                # Guard against bool (subclass of int) which may be returned by mocks or
+                # the base implementation — treat bool as a signal and query the actual count.
+                if isinstance(user_count, bool):
+                    user_count = await self.get_counter_value(user_key)
+                elif not isinstance(user_count, int):
+                    user_count = await self.get_counter_value(user_key)
                 return SecurityAlert(
                     alert_type="excessive_login_failures",
                     severity="high",
@@ -57,9 +64,12 @@ class ExcessiveLoginFailuresRule(RedisAlertRule):
                 )        # Check per-IP threshold
         if event.ip_address:
             ip_key = self.key("ip", event.ip_address)
-            ip_triggered = await self.check_threshold(ip_key, self.ip_threshold, self.window_seconds)
-            if ip_triggered:
-                ip_count = await self.get_counter_value(ip_key)
+            ip_count = await self.check_threshold(ip_key, self.ip_threshold, self.window_seconds)
+            if ip_count:
+                if isinstance(ip_count, bool):
+                    ip_count = await self.get_counter_value(ip_key)
+                elif not isinstance(ip_count, int):
+                    ip_count = await self.get_counter_value(ip_key)
                 return SecurityAlert(
                     alert_type="excessive_login_failures",
                     severity="high",

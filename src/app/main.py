@@ -44,6 +44,16 @@ async def lifespan(app: FastAPI):
     # Startup: Initialize AI System Controller
     try:
         from .ai.controller import controller
+        # Create and attach Ollama client for the controller and app state
+        try:
+            from .ai.ollama_client import create_ollama_client
+            ollama_client = create_ollama_client()
+            # Attach to controller and app state for other modules to use
+            controller.ollama_client = ollama_client
+            app.state.ollama_client = ollama_client
+        except Exception:
+            logger.warning("Failed to initialize Ollama client during startup; continuing without it")
+
         await controller.start()
         logger.info("AI System Controller started successfully")
     except Exception as e:

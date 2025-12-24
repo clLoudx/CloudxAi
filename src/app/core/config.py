@@ -103,8 +103,15 @@ class Settings(BaseSettings):
     @classmethod
     def validate_database_url(cls, v):
         """Validate database URL is PostgreSQL."""
-        if not v.startswith("postgresql"):
-            raise ValueError("Database URL must be PostgreSQL")
+        # Allow PostgreSQL by default. For test environments we also accept
+        # sqlite in-memory URLs to make the test suite hermetic.
+        import os
+
+        if v.startswith("postgresql"):
+            return v
+        if v.startswith("sqlite") and os.environ.get("ENVIRONMENT") == "testing":
+            return v
+        raise ValueError("Database URL must be PostgreSQL (or sqlite for testing)")
         return v
 
 
