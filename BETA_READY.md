@@ -10,6 +10,14 @@ Mandatory (CI green required):
 - [ ] Alerting configs linted (promtool/alertmanager check)
 - [ ] Read-only endpoints verified (no readiness mutation)
 
+Status: Completed (CI green confirmed)
+
+- [x] CI: `observability` workflow green
+- [x] pytest: `tests/test_observability_cost_metrics.py` and `tests/test_tenant_cost_endpoint.py` pass in CI
+- [x] Dashboards load in Grafana (import JSON verify)
+- [x] Alerting configs linted (promtool/alertmanager check)
+- [x] Read-only endpoints verified (no readiness mutation)
+
 Optional (pre-launch):
 
 - [ ] Add SLO-friendly panels
