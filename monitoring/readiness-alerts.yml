@@ -1,0 +1,30 @@
+groups:
+- name: readiness.rules
+  rules:
+
+  - alert: ServiceNotReady
+    expr: readiness_state == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Service not ready for 5 minutes"
+      description: "Readiness probe reports NOT READY."
+
+  - alert: ReadinessFlapping
+    expr: increase(readiness_transitions_total[5m]) > 5
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Readiness flapping detected"
+      description: "Service readiness is oscillating."
+
+  - alert: ReadinessLatencyHigh
+    expr: histogram_quantile(0.95, rate(readiness_check_duration_seconds_bucket[5m])) > 0.2
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Readiness check latency high"
+      description: "p95 readiness check latency exceeded 200ms."

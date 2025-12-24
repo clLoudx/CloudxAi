@@ -1,0 +1,3 @@
+nohup: ignoring input
+/tmp/auto_merge_and_post.sh: line 4: PR_NUM: unbound variable
+Auto-merge watcher started for PR #2; sleeping 3600s

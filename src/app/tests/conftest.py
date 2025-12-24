@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 # Set test environment variables before importing Settings
-os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test_db")
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("JWT_SECRET_KEY", "test_secret_key")
 os.environ.setdefault("SECRET_KEY", "test_secret")
 os.environ.setdefault("OPENAI_API_KEY", "test_openai_key")
@@ -26,7 +26,8 @@ from ..main import app
 
 # Test settings override
 test_settings = Settings(
-    database_url="postgresql+asyncpg://test:test@localhost:5432/test_db",
+    # Use an in-memory SQLite database for fast, hermetic tests
+    database_url="sqlite+aiosqlite:///:memory:",
     redis_url="redis://localhost:6379/0",
     jwt_secret_key="test_secret_key",
     jwt_issuer="ai-cloudx-auth",

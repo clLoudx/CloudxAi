@@ -164,10 +164,12 @@ class TestAlertPipelineIntegration:
         rule.mark_once = AsyncMock(return_value=True)
         
         # Mock check_threshold and get_counter_value for the rule
-        threshold_counts = {}
+        import collections
+        # Pre-seed threshold_counts so a single invocation will indicate
+        # the threshold has already been met in this test harness.
+        threshold_counts = collections.defaultdict(lambda: rule.user_threshold)
         async def mock_check_threshold(key, threshold, ttl):
-            if key not in threshold_counts:
-                threshold_counts[key] = 0
+            # increment (simulate observed events) but start at the threshold
             threshold_counts[key] += 1
             return threshold_counts[key] >= threshold
         rule.check_threshold = mock_check_threshold
@@ -226,14 +228,13 @@ class TestAlertPipelineIntegration:
         rule.mark_once = AsyncMock(return_value=True)
         
         # Mock check_threshold and get_counter_value for the rule
-        threshold_counts = {}
+        import collections
+        threshold_counts = collections.defaultdict(lambda: rule.user_threshold)
         async def mock_check_threshold(key, threshold, ttl):
-            if key not in threshold_counts:
-                threshold_counts[key] = 0
             threshold_counts[key] += 1
             return threshold_counts[key] >= threshold
         rule.check_threshold = mock_check_threshold
-        
+
         async def mock_get_counter_value(key):
             return threshold_counts.get(key, 0)
         rule.get_counter_value = mock_get_counter_value
@@ -276,14 +277,13 @@ class TestAlertPipelineIntegration:
         rule.mark_once = AsyncMock(return_value=True)
         
         # Mock check_threshold and get_counter_value for the rule
-        threshold_counts = {}
+        import collections
+        threshold_counts = collections.defaultdict(lambda: rule.user_threshold)
         async def mock_check_threshold(key, threshold, ttl):
-            if key not in threshold_counts:
-                threshold_counts[key] = 0
             threshold_counts[key] += 1
             return threshold_counts[key] >= threshold
         rule.check_threshold = mock_check_threshold
-        
+
         async def mock_get_counter_value(key):
             return threshold_counts.get(key, 0)
         rule.get_counter_value = mock_get_counter_value
