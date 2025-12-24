@@ -19,6 +19,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Agent primer notice
+        run: |
+          if [ -f docs/AGENT_EXECUTION_PRIMER.md ]; then
+            echo "=== AGENT_EXECUTION_PRIMER.md (first 40 lines) ==="
+            sed -n '1,40p' docs/AGENT_EXECUTION_PRIMER.md || true
+            echo "See docs/AGENT_EXECUTION_PRIMER.md for mandatory agent onboarding sentence."
+          else
+            echo "No AGENT_EXECUTION_PRIMER.md file present."
+          fi
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
