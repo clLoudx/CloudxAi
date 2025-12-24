@@ -1,0 +1,15 @@
+route:
+  receiver: 'default'
+  routes:
+    - matchers: ['alertname="TenantReadinessBreach"']
+      receiver: 'sre-tenant-alerts'
+    - matchers: ['alertname="TenantLabelCardinality"']
+      receiver: 'sre-ops'
+
+receivers:
+  - name: 'default'
+    email_configs: []
+  - name: 'sre-tenant-alerts'
+    email_configs: []
+  - name: 'sre-ops'
+    email_configs: []

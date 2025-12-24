@@ -1,0 +1,26 @@
+{
+  "id": null,
+  "title": "Tenant Readiness Overview",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Tenant Readiness State (example)",
+      "targets": [
+        {
+          "expr": "tenant_readiness_state",
+          "legendFormat": "{{tenant}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Cardinality Rejections",
+      "targets": [
+        { "expr": "increase(tenant_label_rejections_total[5m])", "refId": "B" }
+      ]
+    }
+  ],
+  "schemaVersion": 26,
+  "version": 1
+}
