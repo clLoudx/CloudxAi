@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {"__name__": "tenant_readiness_state", "tenant": "example-tenant"},
+        "value": [1620000000, "1"]
+      },
+      {
+        "metric": {"__name__": "tenant_cost_estimate", "tenant": "example-tenant"},
+        "value": [1620000000, "0.12"]
+      },
+      {
+        "metric": {"__name__": "tenant_label_rejections_total"},
+        "value": [1620000000, "0"]
+      }
+    ]
+  }
+}

@@ -34,6 +34,10 @@ sudo ./installer_master.sh --kube-deploy \
 
 See [docs/INDEX.md](docs/INDEX.md) for complete documentation.
 
+Agent onboarding primer
+-----------------------
+This repository includes a mandatory agent onboarding primer at `docs/AGENT_EXECUTION_PRIMER.md`. Automated agents, CI runners, and repository automation SHOULD reference this file and must acknowledge the onboarding sentence before performing implementation work. Maintainers and reviewers should verify agent acknowledgements as part of PR review for automation-related changes.
+
 ---
 
 ## Repository Structure
